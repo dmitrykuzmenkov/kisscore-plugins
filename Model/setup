@@ -1,0 +1,26 @@
+#!/bin/bash
+mysql_db=$(basename $APP_DIR)
+mysql_ip='127.0.0.1'
+mysql_port=$(allocate_port mysql)
+mysql_password=$(</dev/urandom tr -dc A-Za-z0-9 | head -c40)
+mysql_config=$APP_DIR'/env/etc/mariadb.cnf'
+cat $(dirname `realpath $0`)/mariadb.cnf.tpl \
+  | sed "s|%PORT%|$mysql_port|g" \
+  | sed "s|%IP%|$mysql_ip|g" \
+  | sed "s|%APP_DIR%|$APP_DIR|g" \
+  > $mysql_config
+mkdir $APP_DIR'/env/var/mariadb' 
+mysql_install_db --defaults-file=$mysql_config > /dev/null
+mysqld_safe --defaults-file=$mysql_config --nowatch > /dev/null
+sleep 5
+echo 'Mysql root password: '$mysql_password 
+mysqladmin --defaults-file=$mysql_config -u root password "$mysql_password" 
+echo '#!/bin/bash' > "$APP_DIR/connect-db" 
+echo 'mysql --defaults-file='$mysql_config' -u root -p"'$mysql_password'" '$mysql_db >> "$APP_DIR/connect-db" 
+chmod 0700 "$APP_DIR/connect-db" 
+mysql --defaults-file=$mysql_config -u root -p"$mysql_password" --silent -e 'CREATE DATABASE '$mysql_db 
+pgrep -f "/usr/sbin/mysqld --defaults-file=$mysql_config" | xargs kill -TERM 
+echo '[mysql]' >> "$APP_DIR/env/etc/app.ini" 
+echo "shard[0] = 'mysql:host=$mysql_ip;port=$mysql_port;dbname=$mysql_db;user=root;password=$mysql_password'" >> "$APP_DIR/env/etc/app.ini" 
+
+$APP_DIR/task add 'mysqld_safe --defaults-file='$mysql_config' #mysql'

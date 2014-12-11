@@ -1,0 +1,12 @@
+#!/bin/bash
+ip='127.0.0.1'
+port=$(allocate_port cache)
+
+echo "
+[memcache]
+host = '$ip'
+port = $port
+persistent = 0" \
+>> "$APP_DIR/env/etc/app.ini"
+
+$APP_DIR/task add 'memcached -l '$ip' -p '$port' -m 128 #cache'
