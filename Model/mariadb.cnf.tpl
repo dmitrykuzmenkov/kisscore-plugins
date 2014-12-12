@@ -18,7 +18,7 @@
 [client]
 default-character-set 	= utf8 
 port			= %PORT%
-socket			= %APP_DIR%/env/run/mariadb.sock
+socket			= %PROJECT_DIR%/env/run/mariadb.sock
 
 # Here is entries for some specific programs
 # The following values assume you have at least 32M ram
@@ -37,12 +37,12 @@ collation_server       = utf8_general_ci
 # * Basic Settings
 #
 #user		= dk
-pid-file	= %APP_DIR%/env/run/mariadb.pid
-socket		= %APP_DIR%/env/run/mariadb.sock
+pid-file	= %PROJECT_DIR%/env/run/mariadb.pid
+socket		= %PROJECT_DIR%/env/run/mariadb.sock
 port		= %PORT%
 basedir		= /usr
-datadir		= %APP_DIR%/env/var/mariadb
-tmpdir		= %APP_DIR%/env/tmp
+datadir		= %PROJECT_DIR%/env/var/mariadb
+tmpdir		= %PROJECT_DIR%/env/tmp
 lc_messages_dir	= /usr/share/mysql
 lc_messages	= en_US
 skip-external-locking
@@ -90,19 +90,19 @@ query_cache_size		= 64M
 # Both location gets rotated by the cronjob.
 # Be aware that this log type is a performance killer.
 # As of 5.1 you can enable the log at runtime!
-# general_log_file        = %APP_DIR%/env/log/mysql.log
+# general_log_file        = %PROJECT_DIR%/env/log/mysql.log
 # general_log             = 1
 
 #
 # Error logging goes to syslog due to /etc/mysql/conf.d/mysqld_safe_syslog.cnf.
 #
 # we do want to know about network error
-log-error		= %APP_DIR%/env/log/mariadb-error.log
+log-error		= %PROJECT_DIR%/env/log/mariadb-error.log
 log_warnings		= 2
 #
 # Enable the slow query log to see queries with especially long duration
 #slow_query_log[={0|1}]
-slow_query_log_file	= %APP_DIR%/env/log/mariadb-slow.log
+slow_query_log_file	= %PROJECT_DIR%/env/log/mariadb-slow.log
 long_query_time = 10
 #log_slow_rate_limit	= 1000
 log_slow_verbosity	= query_plan
@@ -117,8 +117,8 @@ log_slow_verbosity	= query_plan
 #report_host		= master1
 #auto_increment_increment = 2
 #auto_increment_offset	= 1
-log_bin			= %APP_DIR%/env/var/mariadb/mariadb-bin
-log_bin_index		= %APP_DIR%/env/var/mariadb/mariadb-bin.index
+log_bin			= %PROJECT_DIR%/env/var/mariadb/mariadb-bin
+log_bin_index		= %PROJECT_DIR%/env/var/mariadb/mariadb-bin.index
 # not fab for performance, but safer
 #sync_binlog		= 1
 expire_logs_days	= 10
