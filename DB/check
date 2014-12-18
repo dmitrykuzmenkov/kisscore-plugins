@@ -1,4 +1,5 @@
 #!/bin/bash
 declare -A checks
-checks['mysqli']='php -m | grep mysqli'
+checks['mysql']='mysql --version'
+checks['mysqli']='php -m | grep mysqli$'
 run_checks
