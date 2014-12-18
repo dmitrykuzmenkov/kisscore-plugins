@@ -2,11 +2,10 @@
 ip='127.0.0.1'
 port=$(allocate_port cache)
 
-echo "
-[memcache]
+app_config memcache "
 host = '$ip'
 port = $port
-persistent = 0" \
->> "$PROJECT_DIR/env/etc/app.ini"
+persistent = 0
+"
 
 $PROJECT_DIR/task add 'memcached -l '$ip' -p '$port' -m 128 #cache'
