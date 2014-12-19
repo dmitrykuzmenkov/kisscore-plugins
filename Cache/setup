@@ -5,7 +5,9 @@ port=$(allocate_port cache)
 app_config memcache "
 host = '$ip'
 port = $port
+; Size in megabytes
+size = 128
 persistent = 0
 "
 
-$PROJECT_DIR/task add 'memcached -l '$ip' -p '$port' -m 128 #cache'
+$PROJECT_DIR/task add 'memcached -l '$ip' -p '$port' -m %SIZE% #memcache'

@@ -24,17 +24,13 @@ trait TCache {
    * @return $this
    */
   public function initCache() {
-    // создаем кэширующий объект
-    $conf = config('memcache');
-    $this->Cache = Cache::getConnection($conf['host'], $conf['port'], (bool) $conf['persistent']);
-
-    $cc = get_class($this);
+    $this->Cache = Cache::getConnection(config('memcache.host'), config('memcache.port'), (bool) config('memcache.persistent'));
 
     // Кэш ключ для значения по ид self::getByIds()
-    $this->cache_keys['item']   = $cc . ':%s';
+    $this->cache_keys['item']   = static::class . ':%s';
 
     // Кэш ключ для self::getCustomCache()
-    $this->cache_keys['custom'] = $cc . ':%s';
+    $this->cache_keys['custom'] = static::class . ':%s';
 
     return $this;
   }

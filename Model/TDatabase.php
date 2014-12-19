@@ -20,11 +20,9 @@ trait TDatabase {
    * @uses Config
    */
   final public function initDatabase( ) {
-    $cc = get_class($this);
-
     // Если не установлена таблица
     if (!$this->table)
-      $this->table = strtolower(str_replace(chr(92), '_', $cc));
+      $this->table = strtolower(str_replace(chr(92), '_', static::class));
 
     // Инициализация таблицы
     if ($this->table[0] !== '`')
@@ -35,10 +33,10 @@ trait TDatabase {
       $this->fields = $this->dbGetFields();
 
     // Кэш ключ для значения по ид self::getByIds()
-    $this->cache_keys['item']   = $cc . ':%d';
+    $this->cache_keys['item']   = static::class . ':%d';
 
     // Кэш ключ для self::getCustomCache()
-    $this->cache_keys['custom'] = $cc . ':%s';
+    $this->cache_keys['custom'] = static::class . ':%s';
 
     return $this;
   }

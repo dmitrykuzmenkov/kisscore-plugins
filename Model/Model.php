@@ -287,7 +287,7 @@ abstract class Model {
         if (!array_key_exists($field, $data))
           continue;
       }
-      //Closure::bind($rule, $this, get_class($this));
+
       $res = $rule($data[$field]);
 
       // Не изменилось поле? удаляем
