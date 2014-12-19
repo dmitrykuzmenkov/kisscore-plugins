@@ -56,7 +56,7 @@ bind-address		= %IP%
 #
 max_connections		= 100
 connect_timeout		= 5
-wait_timeout		= 600
+wait_timeout		= 60
 max_allowed_packet	= 16M
 thread_cache_size       = 128
 sort_buffer_size	= 4M
@@ -140,13 +140,29 @@ max_binlog_size         = 100M
 # Read the manual for more InnoDB related options. There are many!
 default_storage_engine	= InnoDB
 # you can't just change log file size, requires special procedure
+innodb_buffer_pool_size = %INNODB_BUFFER_POOL_SIZE%
 #innodb_log_file_size	= 50M
-innodb_buffer_pool_size	= %INNODB_BUFFER_POOL_SIZE%
 innodb_log_buffer_size	= 8M
+innodb_log_files_in_group = 2
 innodb_file_per_table	= 1
 innodb_open_files	= 400
 innodb_io_capacity	= 400
 innodb_flush_method	= O_DIRECT
+
+innodb_use_native_aio = 1
+innodb_doublewrite = 0
+innodb_flush_log_at_trx_commit = 1
+innodb_buffer_pool_instances = 16
+innodb_thread_concurrency = 32
+innodb_write_io_threads = 32
+innodb_read_io_threads = 32
+innodb_file_format=barracuda
+innodb_lru_scan_depth=25000
+innodb_io_capacity=25000
+innodb_io_capacity_max=35000
+innodb_flush_neighbors=0
+innodb_adaptive_flushing=1
+
 #
 # * Security Features
 #
@@ -158,8 +174,6 @@ innodb_flush_method	= O_DIRECT
 # ssl-ca=/etc/mysql/cacert.pem
 # ssl-cert=/etc/mysql/server-cert.pem
 # ssl-key=/etc/mysql/server-key.pem
-
-
 
 [mysqldump]
 quick

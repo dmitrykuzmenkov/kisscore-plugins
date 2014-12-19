@@ -98,7 +98,7 @@ trait TDatabase {
     return $this->getCacheable('db:scheme:' . $this->table, function () {
       $fields = [];
       if ($data = $this->dbQuery('DESCRIBE ' . $this->table)) {
-        $fields = array_values_by_key($data, 'Field');
+        $fields = array_column($data, 'Field');
       }
       return $fields;
     });
@@ -356,7 +356,7 @@ trait TDatabase {
       . ' WHERE `' . $row . '` IN (' . trim(str_repeat('?, ', sizeof($values)), ', ') . ')';
       ;
     return ($data = self::dbQuery($q, $values))
-      ? array_combine(array_values_by_key($data, 'id'), $data)
+      ? array_combine(array_column($data, 'id'), $data)
       : $data;
   }
 

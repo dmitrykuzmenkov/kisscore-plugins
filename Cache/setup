@@ -9,5 +9,3 @@ port = $port
 size = 128
 persistent = 0
 "
-
-$PROJECT_DIR/task add 'memcached -l '$ip' -p '$port' -m %SIZE% #memcache'

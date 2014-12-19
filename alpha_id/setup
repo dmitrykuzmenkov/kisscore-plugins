@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "include getenv('APP_DIR') . '/plugins/alpha_id/alpha.php'; # alpha_id PLUGIN" >> $APP_DIR/core.php
