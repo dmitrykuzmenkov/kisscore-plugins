@@ -115,18 +115,9 @@ class Pagination {
     $data['current']    = $cur_page;
     $data['last']       = $last_page;
 
-    // Some magic :( Till I create somethink for good mapping without any load on php
-    $url    = parse_url(Request::instance()->getUrl());
-    $path   = isset($url['path']) ? $url['path'] : '/';
-    $params = [];
-    if (isset($url['query']))
-      parse_str($url['query'], $params);
-
-    $url = function ($page) use($path, $params) {
-      $params[$this->page_name] = $page;
-      return $path . '?' . http_build_query($params);
+    $url = function ($page) {
+      return '/' . Request::instance()->getRoute() . '?' . $this->page_name . '=' . $page;
     };
-    // Magic stopped ;P
     
     $data['prev_url'] = '';
     if ($cur_page > 1) {
