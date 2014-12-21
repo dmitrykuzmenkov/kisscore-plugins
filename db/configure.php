@@ -9,4 +9,5 @@ App::configure(__DIR__, [
 	'%INNODB_BUFFER_POOL_SIZE%' => config('mysql.innodb_buffer_pool_size'),
 ]);
 
-App::exec('task add "mysqld_safe --defaults-file=$CONFIG_DIR/mariadb.cnf #mysql"');
+$cmd = App::exec('which mysqld_safe');
+App::exec('task add "' . $cmd . ' --defaults-file=$CONFIG_DIR/mariadb.cnf #mysql"');
