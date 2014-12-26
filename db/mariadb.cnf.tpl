@@ -54,10 +54,10 @@ bind-address		= %IP%
 #
 # * Fine Tuning
 #
-max_connections		= 100
+max_connections		= 1024
 connect_timeout		= 5
 wait_timeout		= 60
-max_allowed_packet	= 16M
+max_allowed_packet	= 32M
 thread_cache_size       = 128
 sort_buffer_size	= 4M
 bulk_insert_buffer_size	= 16M
@@ -178,7 +178,7 @@ innodb_adaptive_flushing=1
 [mysqldump]
 quick
 quote-names
-max_allowed_packet	= 16M
+max_allowed_packet	= 32M
 
 [mysql]
 #no-auto-rehash	# faster start of mysql but no tab completition
