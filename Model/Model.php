@@ -42,7 +42,7 @@
  *   ]);
  * </code>
  */
-abstract class Model {
+abstract class Model implements ArrayAccess {
   use TMessage, TDatabase, TCache, TTimeout, TPagination, TId;
 
   /**
@@ -575,7 +575,7 @@ abstract class Model {
    * @return mixed
    */
   public function getField($k) {
-    return isset($this->data[$k]) ? $this->data[$k] : null;
+    return $this->offsetGet($k);
   }
 
   /**
@@ -587,8 +587,24 @@ abstract class Model {
    * @return $this
    */
   public function setField($k, $v) {
-    $this->data[$k] = $v;
+    $this->offsetSet($k, $v);
     return $this;
+  }
+  
+  public function offsetSet($k, $v) {
+    $this->data[$k] = $v;
+  }
+
+  public function offsetGet($k) {
+    return isset($this->data[$k]) ? $this->data[$k] : null;
+  }
+
+  public function offsetExists($k) {
+    return isset($this->data[$k]);
+  }
+
+  public function offsetUnset($k) {
+    $this->data[$k] = null;
   }
   
   /**
