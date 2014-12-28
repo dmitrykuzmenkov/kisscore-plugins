@@ -612,13 +612,17 @@ abstract class Model implements ArrayAccess {
    * Получение текущих установленных данных и возвращение ссылки на объект
    *
    * @access public
-   * @param int|array $id
+   * @param int $id
    * @return $this
    */
-  public function fetch($id = null) {
+  public static function fetch($id) {
+    return static::create()->load($id);
+  }
+  
+  public function load($id) {
     $this->get($id);
     return $this;
-  }	
+  }
   
   /**
    * Установка данных сущности
