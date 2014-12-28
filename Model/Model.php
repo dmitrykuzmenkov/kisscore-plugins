@@ -632,7 +632,7 @@ abstract class Model implements ArrayAccess {
    * @return $this
    */
   public function set($k, $v = null) {
-    if ($v && is_string($k)) {
+    if (is_string($k)) {
       $this->data[$k] = $v;
     } else {
       $this->data = $k;
