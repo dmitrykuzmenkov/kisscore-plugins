@@ -616,10 +616,12 @@ abstract class Model implements ArrayAccess {
    * @return $this
    */
   public static function fetch($id) {
-    if (!isset(static::$map[$id])) {
-      static::$map[$id] = static::create()->load($id);
+    $key = static::class . '-' . $id;
+    if (!isset(self::$map[$key])) {
+      self::$map[$key] = static::create()->load($id);
     }
-    return static::$map[$id];
+    
+    return self::$map[$key];
   }
   
   public function load($id) {
