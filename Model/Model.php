@@ -616,7 +616,10 @@ abstract class Model implements ArrayAccess {
    * @return $this
    */
   public static function fetch($id) {
-    return static::create()->load($id);
+    if (!isset(static::$map[$id])) {
+      static::$map[$id] = static::create()->load($id);
+    }
+    return static::$map[$id];
   }
   
   public function load($id) {
