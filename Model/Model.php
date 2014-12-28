@@ -567,30 +567,6 @@ abstract class Model implements ArrayAccess {
     return $this->id;
   }
   
-  /**
-   * Получение какого-то отдельного поля
-   *
-   * @access public
-   * @param string $k
-   * @return mixed
-   */
-  public function getField($k) {
-    return $this->offsetGet($k);
-  }
-
-  /**
-   * Установка новых данных для какого-то поля
-   *
-   * @access public
-   * @param string $k Ключ элемента
-   * @param string $v Значение
-   * @return $this
-   */
-  public function setField($k, $v) {
-    $this->offsetSet($k, $v);
-    return $this;
-  }
-  
   public function offsetSet($k, $v) {
     $this->data[$k] = $v;
   }
@@ -606,7 +582,7 @@ abstract class Model implements ArrayAccess {
   public function offsetUnset($k) {
     $this->data[$k] = null;
   }
-  
+
   /**
    * Получение текущих установленных данных
    *
@@ -651,8 +627,13 @@ abstract class Model implements ArrayAccess {
    * @param array $data
    * @return $this
    */
-  public function set(array $data) {
-    $this->data = $data;
+  public function set($k, $v = null) {
+    if ($v && is_string($k)) {
+      $this->data[$k] = $v;
+    } else {
+      $this->data = $k;
+    }
+
     return $this;
   }
 
