@@ -7,6 +7,7 @@ App::configure(__DIR__, [
 	'%USER%'	 => config('mysql.user'),
 	'%PASSWORD%' => config('mysql.password'),
 	'%INNODB_BUFFER_POOL_SIZE%' => config('mysql.innodb_buffer_pool_size'),
+	'%INNODB_BUFFER_POOL_INSTANCES%' => config('mysql.innodb_buffer_pool_instances'),
 ]);
 
 $cmd = App::exec('which mysqld_safe');
