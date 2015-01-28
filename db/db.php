@@ -12,7 +12,7 @@ function db($query, array $params = [], $shard_id = 0) {
   assert("\is_array(\$params)");
   assert("is_int(\$shard_id)");
   assert("\$shard_id >= 0 && \$shard_id < 4096 /* only 4096 shards allowed */");
-  
+
   static $time = 0;
   static $pool = [];
   static $shards = [];

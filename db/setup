@@ -4,7 +4,7 @@ mysql_user=root
 mysql_ip='127.0.0.1'
 mysql_port=$(allocate_port mysql)
 mysql_password=$(</dev/urandom tr -dc A-Za-z0-9 | head -c40)
-mysql_config=$CONFIG_DIR'/mariadb.cnf'  
+mysql_config=$CONFIG_DIR'/mariadb.cnf'
 
 app_config mysql "
 host = '$mysql_ip'
@@ -20,16 +20,16 @@ shard[0] = 'mysql:host=$mysql_ip;port=$mysql_port;dbname=$mysql_db;user=$mysql_u
 
 php-exec "App::reconfigure()"
 
-mkdir $VAR_DIR'/mariadb' 
+mkdir $VAR_DIR'/mariadb'
 mysql_install_db --defaults-file=$mysql_config > /dev/null
 mysqld_safe --defaults-file=$mysql_config --nowatch > /dev/null
 sleep 5
-echo 'Mysql root password: '$mysql_password 
-mysqladmin --defaults-file=$mysql_config -u root password "$mysql_password" 
-echo '#!/bin/bash' > "$PROJECT_DIR/connect-db" 
-echo 'mysql --defaults-file='$mysql_config' -u root -p"'$mysql_password'" '$mysql_db >> "$BIN_DIR/connect-db" 
-chmod 0700 "$PROJECT_DIR/connect-db" 
-mysql --defaults-file=$mysql_config -u root -p"$mysql_password" --silent -e 'CREATE DATABASE '$mysql_db 
-pgrep -f "/usr/sbin/mysqld --defaults-file=$mysql_config" | xargs kill -TERM 
+echo 'Mysql root password: '$mysql_password
+mysqladmin --defaults-file=$mysql_config -u root password "$mysql_password"
+echo '#!/bin/bash' > "$PROJECT_DIR/connect-db"
+echo 'mysql --defaults-file='$mysql_config' -u root -p"'$mysql_password'" '$mysql_db >> "$BIN_DIR/connect-db"
+chmod 0700 "$PROJECT_DIR/connect-db"
+mysql --defaults-file=$mysql_config -u root -p"$mysql_password" --silent -e 'CREATE DATABASE '$mysql_db
+pgrep -f "/usr/sbin/mysqld --defaults-file=$mysql_config" | xargs kill -TERM
 
 echo "include getenv('APP_DIR') . '/plugins/db/db.php'; # db PLUGIN" >> $APP_DIR/core.php

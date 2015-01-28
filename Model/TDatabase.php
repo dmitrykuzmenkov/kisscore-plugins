@@ -94,7 +94,7 @@ trait TDatabase {
    * @return array
    * @throws Exception
    */
-  protected function dbGetFields( ) { 
+  protected function dbGetFields( ) {
     return $this->getCacheable('db:scheme:' . $this->table, function () {
       $fields = [];
       if ($data = $this->dbQuery('DESCRIBE ' . $this->table)) {
@@ -139,11 +139,8 @@ trait TDatabase {
             foreach ($c as $v) {
               $id_params[] = sprintf('ID%d', ++$i);
             }
-            
             $conditions = array_merge($conditions, array_combine($id_params, $c));
-
             $where[] = ' `' . $k . '` IN (:' . implode(', :', $id_params) . ') ';
-            
           } else {
             $where[] = ' `'. $k . '` = NULL ';
           }
@@ -153,7 +150,6 @@ trait TDatabase {
         }
       }
     }
-    
     return $where;
   }
 
@@ -350,7 +346,7 @@ trait TDatabase {
    */
   protected function dbGetByFields(array $fields, $row, array $values) {
     assert('sizeof($values) > 0');
-    
+
     $q = 'SELECT ' . self::dbGetSqlStringByParams($fields)
       . ' FROM ' . $this->table
       . ' WHERE `' . $row . '` IN (' . trim(str_repeat('?, ', sizeof($values)), ', ') . ')';

@@ -68,7 +68,7 @@ class Cache {
     }
     return $Instance;
   }
-  
+
   /**
    * Подключение к серверну мемкэша
    */
@@ -83,7 +83,7 @@ class Cache {
     }
     $this->is_connected = true;
   }
-  
+
   /**
    * Получение данных из кэша по ключу
    *
@@ -112,7 +112,7 @@ class Cache {
 
     return $items;
   }
-  
+
   /**
    * Установка данные для ключа, перезапись в случае нахождения
    *
@@ -146,7 +146,7 @@ class Cache {
     }
     return $ret;
   }
-  
+
   /**
    * Добавление данных в кэш, если их там нет
    *
@@ -162,7 +162,7 @@ class Cache {
       $ttl
     ]);
   }
-  
+
   /**
   * Добавление какого-то текста к данному в конец строки
   *
@@ -174,7 +174,7 @@ class Cache {
     //return $this->Memcache->append($key, $val);
     return $this->doCommand('append', [$key, $val]);
   }
-  
+
   /**
    * Добавление какого-то текста к данному в начало строки
    *
@@ -185,7 +185,7 @@ class Cache {
   function prepend($key, $val) {
     return $this->doCommand('prepend', [$key, $val]);
   }
-  
+
   /**
    * Удаление данного по ключу из кэша
    *
@@ -195,7 +195,7 @@ class Cache {
   public function delete($key) {
     return $this->doCommand('delete', [$key]);
   }
-  
+
   /**
    * Алиас для функции удаления
    *
@@ -204,7 +204,7 @@ class Cache {
   public function remove($key) {
     return $this->delete($key);
   }
-  
+
   /**
    * Увеличения счетчика на n число раз
    * Если ключа нет, он создается
@@ -220,7 +220,7 @@ class Cache {
     }
     return $result;
   }
-  
+
   /**
    * Уменьшение счетчика на n число раз
    *
@@ -229,7 +229,7 @@ class Cache {
   public function decrement($key, $count = 1) {
     return $this->increment($key, -$count);
   }
-  
+
   /**
    * Выполнение комманды к серверу
    *
@@ -244,7 +244,7 @@ class Cache {
 
     return call_user_func_array([$this->Memcache, $command], $data);
   }
-  
+
   /**
    * Очистка всего пула кэша
    * @return bool
@@ -252,7 +252,7 @@ class Cache {
   public function flush( ) {
     return $this->doCommand('flush');
   }
-  
+
   /**
    * Закрытие соединение с кэширующим механизмом
    *

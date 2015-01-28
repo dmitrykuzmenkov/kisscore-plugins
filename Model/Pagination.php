@@ -32,7 +32,7 @@ class Pagination {
   $default_page = 1,
   $route        = '',
   $params       = [];
-  
+
   private static $Instance = null;
 
   /**
@@ -46,7 +46,7 @@ class Pagination {
     }
     return self::$Instance;
   }
-  
+
   /**
    * Установка необходимых данных для генерации
    *
@@ -69,7 +69,7 @@ class Pagination {
   public function getRoute( ) {
     return $this->route;
   }
-  
+
   /**
    * Получение текущей страницы
    *
@@ -84,7 +84,7 @@ class Pagination {
     }
     return $page > ($last_page = $this->getLastPage( )) ? $last_page : $page;
   }
-  
+
   /**
    * Получение номера последней страницы
    *
@@ -118,7 +118,7 @@ class Pagination {
     $url = function ($page) {
       return '/' . Request::instance()->getRoute() . '?' . $this->page_name . '=' . $page;
     };
-    
+
     $data['prev_url'] = '';
     if ($cur_page > 1) {
       //$data['prev_url'] = $url($cur_page - 1);

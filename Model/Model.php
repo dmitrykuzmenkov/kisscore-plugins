@@ -60,7 +60,7 @@ abstract class Model implements ArrayAccess {
   STATE_FAIL      = 2,
   STATE_DENIED    = 3,
   STATE_DISABLED  = 4;
-  
+
   /**
    * @property bool $is_new
    *   Флаг, обозначающий является ли текущее данное в модели новым
@@ -70,7 +70,7 @@ abstract class Model implements ArrayAccess {
   protected
   $is_new   = true,
   $ids      = [];
-  
+
   /**
    * @access protected
    * @property mixed $id
@@ -85,7 +85,7 @@ abstract class Model implements ArrayAccess {
   $data   = [],
   $state  = self::STATE_OK
   ;
-  
+
   /**
    * @property array $map Карта всех моделей
    */
@@ -136,7 +136,7 @@ abstract class Model implements ArrayAccess {
    *   Массив с данными одного элемента
    */
   protected function prepareResult(array &$item) {}
-  
+
   /**
    * Проверка возвращаемых данных на предмет унификации
    * Добавление необходимых переменных лимитов и постраничного вывода
@@ -175,7 +175,7 @@ abstract class Model implements ArrayAccess {
     array_walk($list['items'], [$this, 'prepareResult']);
     return $list;
   }
-  
+
   /**
    * Необходимая обработка и возврат плоского списка
    *
@@ -224,7 +224,7 @@ abstract class Model implements ArrayAccess {
   protected function rules() {
     return [];
   }
-  
+
   /**
    * Функция для формирования Closures, которые выполняются до
    * каких-то манипуляций с данными
@@ -238,7 +238,7 @@ abstract class Model implements ArrayAccess {
   protected function before() {
     return [];
   }
-  
+
   /**
    * Функция для формирования Closures, которые выполняются
    * после успешной манипуляци с данными
@@ -248,7 +248,7 @@ abstract class Model implements ArrayAccess {
   protected function after() {
     return [];
   }
-  
+
   /**
    * Выполнение обработки до/после манипуляций с данными
    * согласно определенными правилам self::before() self::after()
@@ -264,7 +264,7 @@ abstract class Model implements ArrayAccess {
     }
     return $this;
   }
-  
+
   /**
    * Функция валидации данных
    *
@@ -326,7 +326,7 @@ abstract class Model implements ArrayAccess {
     $this->dbUpdateByIds($counters, $ids ? $ids : [$this->getId()], true);
     return $this;
   }
-  
+
   /**
    * Получение нескольких записей по ID
    *
@@ -357,7 +357,7 @@ abstract class Model implements ArrayAccess {
       // попутно сортируя в порядке ID
       $result = [];
       $diff   = $this->dbGetByIds($this->fields, $missed);
-      
+
       foreach ($ids as $id) {
         if (isset($diff[$id]))
           $this->cacheSet($this->getCacheKey('item', $id), $diff[$id]);
@@ -410,7 +410,7 @@ abstract class Model implements ArrayAccess {
     $this->processing('before', 'save');
     // intersect потому что обработка переменных идет на $this->data, посылам только нужные запросы на сервер
     $data = array_intersect_key($this->data, $data);
-    
+
     // Если что-то не так
     if (!$this->validate($data)->isOk())
       return $this;
@@ -518,7 +518,7 @@ abstract class Model implements ArrayAccess {
     }
     return $this;
   }
-  
+
   /**
    * Получение текущего состояния модели
    *
@@ -556,7 +556,7 @@ abstract class Model implements ArrayAccess {
     $this->data = [];
     return $this;
   }
-  
+
   /**
    * Получение текущей ID сущности
    *
@@ -566,7 +566,7 @@ abstract class Model implements ArrayAccess {
   public function getId( ) {
     return $this->id;
   }
-  
+
   public function offsetSet($k, $v) {
     $this->data[$k] = $v;
   }
@@ -596,18 +596,18 @@ abstract class Model implements ArrayAccess {
     // Nothing to get?
     if (!$id)
       return false;
-    
+
     if (is_array($id)) { // Нужно получить по идам?
       return $this->getByIds($id);
     } elseif (!$this->getId()) { // Если данных не было установлено, пытаемся найти их
       if ($rows = $this->getByIds([$id])) {
         $this->setId($id)->set(array_shift($rows));
-      } 
+      }
     }
 
     return $this->data;
   }
-	
+
   /**
    * Получение текущих установленных данных и возвращение ссылки на объект
    *
@@ -620,15 +620,15 @@ abstract class Model implements ArrayAccess {
     if (!isset(self::$map[$key])) {
       self::$map[$key] = static::create()->load($id);
     }
-    
+
     return self::$map[$key];
   }
-  
+
   public function load($id) {
     $this->get($id);
     return $this;
   }
-  
+
   /**
    * Установка данных сущности
    *

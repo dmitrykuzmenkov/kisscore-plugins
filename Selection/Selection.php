@@ -8,7 +8,7 @@ class Selection {
    * @property bool $is_cacheable
    */
   protected $is_cacheable = false;
-  
+
   /**
    * Первичная инициализация и установка необходимой таблицы для использования
    *
