@@ -1,0 +1,4 @@
+#!/bin/bash
+declare -A checks
+checks['php-pthreads']='php -m | grep pthreads$';
+run_checks
