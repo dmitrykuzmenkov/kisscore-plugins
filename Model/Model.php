@@ -356,7 +356,7 @@ abstract class Model implements ArrayAccess {
       // Подгружаем только не найденные данные,
       // попутно сортируя в порядке ID
       $result = [];
-      $diff   = $this->dbGetByIds($this->fields, $missed);
+      $diff   = $missed ? $this->dbGetByIds($this->fields, $missed) : [];
 
       foreach ($ids as $id) {
         if (isset($diff[$id]))
