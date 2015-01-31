@@ -41,7 +41,7 @@ abstract class ItemManager {
     $this->calls[] = [$method, is_array($args) ? $args : [$args]];
     return $this;
   }
-  
+
 
   /**
    * Проверка состояния последних выполненных операций всех моделей

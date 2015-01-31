@@ -1,7 +1,7 @@
 <?php
 /**
  * Выполнение запроса к базе данных, выполняет коннект на запросе
- * 
+ *
  * @param string $query
  * @param array $params
  * @param int $shard_id

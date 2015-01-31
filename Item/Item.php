@@ -32,12 +32,12 @@ class Item {
   $id     = 0,
   $batch  = [],
   $result = [];
-  
+
   /**
    * Финальный конструктор
    */
   final private function _construct() {}
-  
+
   /**
    * Создание главного загрузчика, после которого выполняются все дополнительные, инициализация
    *
@@ -52,7 +52,7 @@ class Item {
     $result = [];
     return ItemFetcher::create($mapper, 'id', is_array($args) ? $args : [$args], $result, $batch);
   }
-  
+
   /**
    * Поставнока подзагрузки в очередь, данные зависимы от главного загрузчика
    *

@@ -17,7 +17,7 @@ class ItemFetcher extends ItemManager {
   $src_key  = '',
   $root_key = '',
   $dst_key  = '';
-  
+
   /**
    * Создание загрузчика данных и постановка первого задания
    *
@@ -43,10 +43,10 @@ class ItemFetcher extends ItemManager {
       $model  = $mapper;
       $method = 'get';
     }
-    
+
     $Self->model  = $model;
     $Self->method = $method;
-    
+
     $Self->src_key    = $src_key;
     $Self->dst_key    = $Self->getDstKey($src_key);
     $Self->args       = $args;
@@ -65,7 +65,7 @@ class ItemFetcher extends ItemManager {
     $this->root_key = $root_key;
     return $this;
   }
-  
+
   /**
    * Получение ключа назначения (куда будут слиты данные)
    * Обычно передается ключ вида user_id, соответсвенно ключ будет user
@@ -81,7 +81,7 @@ class ItemFetcher extends ItemManager {
 
     return substr($key, 0, strrpos($key, '_'));
   }
-  
+
   /**
    * Инициализцаия постраничной выборки
    *
@@ -97,7 +97,7 @@ class ItemFetcher extends ItemManager {
       ->call('setPage',   $page)
       ->call('setTotal', $total);
   }
-  
+
   /**
    * Выполнение в последовательном режиме
    *
@@ -107,7 +107,7 @@ class ItemFetcher extends ItemManager {
   public function dispatch() {
     if (!$this->data) { // Если данных не было передано, подгружаем
       $Obj = Model::create($this->model);
-      
+
       // Если необходимы специфичные вызовы
       if ($this->calls) {
         foreach ($this->calls as $call) {
@@ -115,7 +115,7 @@ class ItemFetcher extends ItemManager {
         }
         unset($this->calls);
       }
-      
+
       // Хапаем основные данные
       $this->data = call_user_func_array(
         [$Obj, $this->method],
@@ -186,18 +186,18 @@ class ItemFetcher extends ItemManager {
               $row = $item[$sk];
             }
             //$row  = $rk ? $item[$rk][$sk] : $item[$sk];
-            
+
             if ($rk) {
               eval('$dest = &$item[\'' . implode('\'][\'', $rk) . '\'][\'' . $dk . '\'];');
               //$dest = &$item[$rk][$dk];
             } else {
               $dest = &$item[$dk];
             }
-            
+
             $dest = is_array($row)
                   ? array_values(array_intersect_key($items ? $items : [], array_flip($row)))
                   : (isset($items[$row]) ? $items[$row] : null);
-            
+
             //$item['has_' . $dk]   = !!$item[$dk];
             //$item['has_no_' . $dk]= !$item[$dk];
           }
