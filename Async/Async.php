@@ -4,7 +4,7 @@ class Async extends Thread {
   protected $args = [];
   protected $result;
 
-  private function __construct(Closure $closure, array $args = []) {
+  protected function __construct(Closure $closure, array $args = []) {
     $this->closure = $closure;
     $this->args    = $args;
   }
