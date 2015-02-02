@@ -1,5 +1,5 @@
 <?php
-// Still fucking buggy. Errors on static var of functions (connections);
+// Still buggy. Use only for simple calls without dependencies on core
 class Async extends Thread {
   protected $closure;
   protected $args = [];
@@ -13,9 +13,7 @@ class Async extends Thread {
   }
 
   public function run() {
-    $closure = $this->closure;
-    $core = getenv('KISS_CORE');
-    $this->synchronized(function () use ($closure, $core) {
+    $this->synchronized(function ($closure) {
       try {
         $this->result = $closure(...$this->args);
       } catch (Exception $E) {
@@ -24,7 +22,7 @@ class Async extends Thread {
         $this->processed = true;
         $this->notify();
       }
-    });
+    }, $this->closure);
   }
 
   public function getResult() {
