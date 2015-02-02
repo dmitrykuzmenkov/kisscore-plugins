@@ -79,7 +79,7 @@ class Cache {
 
     $this->Memcache = new Memcached;
     if (!$this->Memcache->addServer($this->host, $this->port)) {
-      throw new HttpException('Ошибка при попытке подключения к серверу кэша в оперативной памяти.', 500);
+      App::error('Ошибка при попытке подключения к серверу кэша в оперативной памяти.');
     }
     $this->is_connected = true;
   }
