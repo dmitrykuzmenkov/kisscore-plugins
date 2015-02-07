@@ -398,7 +398,7 @@ trait TDatabase {
     if (!$this->total)
       $this->total = $this->dbCount($conditions);
 
-    return $this->get(
+    return static::getByIds(
       $this->total ? array_column($this->dbSelect(['id'], $conditions, $order, $this->offset, $this->limit), 'id') : []
     );
   }

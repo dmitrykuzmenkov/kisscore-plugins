@@ -43,7 +43,7 @@ class ItemFetcher extends ItemManager {
       list($model, $method) = explode('::', $mapper);
     } else {
       $model  = $mapper;
-      $method = 'getByIds';
+      $method = 'get';
     }
 
     $Self->model  = $model;
@@ -126,6 +126,10 @@ class ItemFetcher extends ItemManager {
         $this->args
       );
 
+      if ($this->method === 'get') {
+        $this->data = $this->data->getData();
+      }
+
       // Refactor this shit later
       if ($this->Pagination) {
         $this->data = $this->Pagination->setTotal($Obj->getTotal())->listResult($this->data);
@@ -181,7 +185,7 @@ class ItemFetcher extends ItemManager {
           if (isset($ids[0]) && is_array($ids[0]))
             $ids = call_user_func_array('array_merge', $ids);
 
-          $items = $Obj->get($ids);
+          $items = $Obj->getByIds($ids);
           foreach ($data as &$item) {
 
             if ($rk) {
@@ -202,12 +206,9 @@ class ItemFetcher extends ItemManager {
             $dest = is_array($row)
                   ? array_values(array_intersect_key($items ? $items : [], array_flip($row)))
                   : (isset($items[$row]) ? $items[$row] : null);
-
-            //$item['has_' . $dk]   = !!$item[$dk];
-            //$item['has_no_' . $dk]= !$item[$dk];
           }
         } else {
-          $this->data[$dk] = $Obj->get($this->data[$sk]);
+          $this->data[$dk] = is_array($this->data[$sk]) ? $Obj::getByIds($this->data[$sk]) : $Obj::get($this->data[$sk])->getData();
         }
         $prev = $sk;
       }

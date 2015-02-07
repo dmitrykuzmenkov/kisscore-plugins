@@ -159,14 +159,6 @@ abstract class Model implements ArrayAccess {
    *
    * @param array $data
    * @return $this
-   *
-   * <code>
-   * $result = Model::create($form);
-   * </code>
-   *
-   * <code>
-   * $result = Model::fetch($id)->save($form);
-   * </code>
    */
   public function save(array $data) {
     // Не пропускаем к базе возможно установленные левые ключи
@@ -277,6 +269,10 @@ abstract class Model implements ArrayAccess {
 
   public function offsetUnset($k) {
     $this->data[$k] = null;
+  }
+
+  public function getData() {
+    return $this->data;
   }
 
   /**
@@ -391,7 +387,7 @@ abstract class Model implements ArrayAccess {
 
       // Если результат не TRUE, то там ошибка
       if (isset($res) && true !== $res) {
-        $this->errors[$field . '_' . $res] = true;
+        $this->addError($field . '_' . $res);
       }
     }
     return $this;
@@ -399,5 +395,16 @@ abstract class Model implements ArrayAccess {
 
   public function getErrors() {
     return $this->errors;
+  }
+
+  public function addError($error) {
+    $this->errors['e_' . strtolower(static::class) . '_' . $error] = true;
+    return $this;
+  }
+
+  public function done(&$errors, Closure $callback = null) {
+    $errors = $this->getErrors();
+    $callback && $callback();
+    return $this; 
   }
 }
