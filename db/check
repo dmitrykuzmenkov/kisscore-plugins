@@ -1,8 +1,0 @@
-#!/bin/bash
-declare -A checks
-checks['mysql']='mysql --version'
-checks['mysqli']='php -m | grep mysqli$'
-read -d '' checks['mysqlnd'] << EOF
-  php -r "function_exists('mysqli_fetch_all') ?: exit(1);"
-EOF
-run_checks

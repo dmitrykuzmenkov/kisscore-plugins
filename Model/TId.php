@@ -12,14 +12,12 @@ trait TId {
    *   то выбирается случайное число
    * @return int
    */
-  protected function generateId($id = 0) {
-    $this->setState(self::STATE_FAIL);
-
+  protected static function generateId($id = 0) {
     // Пытаемся получить метку и сгенерировать ид
     if ($epoch = config('common.epoch')) {
-      $this->setState(self::STATE_OK);
       return (floor(microtime(true) * 1000 - $epoch) << 23) + (mt_rand(0, 4095) << 13) + (($id ? $id : lcg_value() * 10000000) % 1024);
     }
+
     return 0;
   }
 
@@ -30,7 +28,7 @@ trait TId {
    * @return $this
    */
   public function getByAlphaId($id) {
-    return $this->get($this->decodeId($id));
+    return $this->get(static::decodeId($id));
   }
 
   /**
@@ -39,7 +37,7 @@ trait TId {
    * @return string
    */
   public function getAlphaId() {
-    return $this->encodeId($this->getId());
+    return static::encodeId($this->getId());
   }
 
   /**
@@ -48,8 +46,8 @@ trait TId {
    * @param int $id
    * @return string
    */
-  protected function encodeId($id) {
-    return alpha_encode($id, config('common.alphabet'));
+  protected static function encodeId($id) {
+    return AlphaID::encode($id, config('common.alphabet'));
   }
 
   /**
@@ -58,7 +56,24 @@ trait TId {
    * @param string $id
    * @return int
    */
-  protected function decodeId($id) {
-    return alpha_decode($id, config('common.alphabet'));
+  protected static function decodeId($id) {
+    return AlphaID::decoe($id, config('common.alphabet'));
+  }
+
+  /**
+   * @param array $ids
+   * @return string
+   */
+  protected static function packIds(array $ids) {
+    return implode(', ', $ids);
+  }
+
+  /**
+   * @param string $id_string
+   * @return array
+   */
+  protected static function unpackIds($id_string) {
+    assert("is_string(\$id_string)");
+    return $id_string ? array_map('trim', explode(',', $id_string)) : [];
   }
 }

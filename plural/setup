@@ -1,2 +1,0 @@
-#!/bin/bash
-echo "include getenv('APP_DIR') . '/plugins/plural/plural.php'; # plural PLUGIN" >> $APP_DIR/core.php

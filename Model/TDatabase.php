@@ -74,7 +74,7 @@ trait TDatabase {
    * @throws Exception
    */
   protected function dbQuery($query, array $params = []) {
-    return db($query, $params, $this->dbShardId($params));
+    return DB::query($query, $params, $this->dbShardId($params));
   }
 
   /**
@@ -395,11 +395,11 @@ trait TDatabase {
    */
   public function getList(array $conditions = [], array $order = []) {
     // Если было установлено
-    if (!isset($this->total))
-      $this->setTotal($this->dbCount($conditions));
+    if (!$this->total)
+      $this->total = $this->dbCount($conditions);
 
-    return $this->listResult(
-      $this->total ? $this->dbSelect($this->fields, $conditions, $order, $this->offset, $this->limit) : []
+    return $this->get(
+      $this->total ? array_column($this->dbSelect(['id'], $conditions, $order, $this->offset, $this->limit), 'id') : []
     );
   }
 }

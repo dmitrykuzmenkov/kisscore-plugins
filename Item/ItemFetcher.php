@@ -18,6 +18,8 @@ class ItemFetcher extends ItemManager {
   $root_key = '',
   $dst_key  = '';
 
+  protected $Pagination = null;
+
   /**
    * Создание загрузчика данных и постановка первого задания
    *
@@ -41,7 +43,7 @@ class ItemFetcher extends ItemManager {
       list($model, $method) = explode('::', $mapper);
     } else {
       $model  = $mapper;
-      $method = 'get';
+      $method = 'getByIds';
     }
 
     $Self->model  = $model;
@@ -91,11 +93,13 @@ class ItemFetcher extends ItemManager {
    * @param int $total
    * @return $this
    */
-  public function paginate($page, $limit, $total = null) {
-    return $this
-      ->call('setLimit',  $limit)
-      ->call('setPage',   $page)
-      ->call('setTotal', $total);
+  public function paginate($page, $limit, $total = 0) {
+    $this->Pagination = Pagination::create([
+      'page'      => $page,
+      'limit'     => $limit,
+      'total'     => $total,
+    ]);
+    return $this;
   }
 
   /**
@@ -106,14 +110,14 @@ class ItemFetcher extends ItemManager {
    */
   public function dispatch() {
     if (!$this->data) { // Если данных не было передано, подгружаем
-      $Obj = Model::create($this->model);
-
-      // Если необходимы специфичные вызовы
-      if ($this->calls) {
-        foreach ($this->calls as $call) {
-          call_user_func_array([$Obj, $call[0]], $call[1]);
-        }
-        unset($this->calls);
+      $Obj = new $this->model;
+      if ($this->Pagination) {
+        $offset = ($this->Pagination->getCurrentPage() - 1) * $this->Pagination->getLimit();
+        $Obj
+          ->setOffset($offset)
+          ->setLimit($this->Pagination->getLimit())
+          ->setTotal($this->Pagination->getTotal())
+        ;
       }
 
       // Хапаем основные данные
@@ -122,9 +126,10 @@ class ItemFetcher extends ItemManager {
         $this->args
       );
 
-      // Состояние операции текущей модели
-      $this->states[0] = $Obj->isOk();
-      unset($Obj);
+      // Refactor this shit later
+      if ($this->Pagination) {
+        $this->data = $this->Pagination->setTotal($Obj->getTotal())->listResult($this->data);
+      }
     }
 
     // Если нужно выполнить действия, зависимые от первого
@@ -136,7 +141,7 @@ class ItemFetcher extends ItemManager {
         $sk = $Fetcher->src_key;
         $rk = $Fetcher->root_key ? explode('.', $Fetcher->root_key) : [];
 
-        $Obj = Model::create($Fetcher->model);
+        $Obj = new $Fetcher->model;
 
         // Возвращаемые данные списков могут быть просто данными
         // или же специальными постраничными списками, тогда данные находятся
@@ -204,8 +209,6 @@ class ItemFetcher extends ItemManager {
         } else {
           $this->data[$dk] = $Obj->get($this->data[$sk]);
         }
-        $this->states[] = $Obj->isOk( );
-        unset($Obj);
         $prev = $sk;
       }
 

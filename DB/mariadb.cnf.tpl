@@ -3,7 +3,7 @@
 # You can copy this file to one of:
 # - "/etc/mysql/my.cnf" to set global options,
 # - "~/.my.cnf" to set user-specific options.
-# 
+#
 # One can use all long options that the program supports.
 # Run program with --help to get a list of available options and with
 # --print-defaults to see which it would actually understand and use.
@@ -16,7 +16,7 @@
 # escpecially if they contain "#" chars...
 # Remember to edit /etc/mysql/debian.cnf when changing the socket location.
 [client]
-default-character-set 	= utf8 
+default-character-set 	= utf8
 port			= %PORT%
 socket			= %RUN_DIR%/mariadb.sock
 
@@ -29,10 +29,10 @@ socket			= %RUN_DIR%/mariadb.sock
 #nice		= 0
 
 [mysqld]
-character-set-server  = utf8 
-collation-server      = utf8_general_ci 
-character_set_server   = utf8 
-collation_server       = utf8_general_ci 
+character-set-server  = utf8
+collation-server      = utf8_general_ci
+character_set_server   = utf8
+collation_server       = utf8_general_ci
 #
 # * Basic Settings
 #
@@ -54,10 +54,10 @@ bind-address		= %IP%
 #
 # * Fine Tuning
 #
-max_connections		= 1024
+max_connections		= 100
 connect_timeout		= 5
 wait_timeout		= 60
-max_allowed_packet	= 32M
+max_allowed_packet	= 16M
 thread_cache_size       = 128
 sort_buffer_size	= 4M
 bulk_insert_buffer_size	= 16M
@@ -152,7 +152,7 @@ innodb_flush_method	= O_DIRECT
 innodb_use_native_aio = 1
 innodb_doublewrite = 0
 innodb_flush_log_at_trx_commit = 1
-innodb_buffer_pool_instances = %INNODB_BUFFER_POOL_INSTANCES%
+innodb_buffer_pool_instances = 16
 innodb_thread_concurrency = 32
 innodb_write_io_threads = 32
 innodb_read_io_threads = 32
@@ -178,7 +178,7 @@ innodb_adaptive_flushing=1
 [mysqldump]
 quick
 quote-names
-max_allowed_packet	= 32M
+max_allowed_packet	= 16M
 
 [mysql]
 #no-auto-rehash	# faster start of mysql but no tab completition

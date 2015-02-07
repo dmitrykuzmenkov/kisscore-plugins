@@ -8,88 +8,54 @@
  * @subpackage Model
  *
  * <code>
- * $Model  = Model::factory('chat/room');
- * $result = $Model->callToSomeMethod( );
+ * User::create()->save(['name' => 'Dmitry']);
  * </code>
  *
  * <code>
- * $errors = Model::create('UserProfile')
- *   ->setId(1)
- *   ->set(['name' => 'Dmitry'])
- *   ->save( )
- *   ->getErrors( )
- * ;
+ * User::fetch(1)->save(['name' => 'New name']);
  * </code>
  *
  * <code>
- * $errors = Model::create('UserProfile')
- *   ->setId(1)
- *   ->save($data)
- * ;
+ * User::fetch(1)->delete();
  * </code>
  *
  * <code>
- * $url = '/';
- * Model::create('UserProfile')
- *   ->save($data)
- *   ->done([
- *     'ok'  => function () use ($url) {
- *       redirect($url);
- *     },
- *     'fail'  => function () {
- *       echo 'Shit happens :)';
- *     }
- *   ]);
+ * echo User::get(1)['name'];
  * </code>
  */
 abstract class Model implements ArrayAccess {
-  use TMessage, TDatabase, TCache, TTimeout, TPagination, TId;
-
-  /**
-   * @const STATE_OK
-   *   Успешное завершение операции
-   * @const STATE_ERROR
-   *   Ошибочное завершение операции
-   * @const STATE_DENIED
-   *   Если недостаточно прав для совершения действия
-   * @const STATE_DISABLED
-   *   Если раздел временно недоступен, отключен, и т.п. (не реализовано)
-   */
-  const
-  STATE_OK        = 1,
-  STATE_FAIL      = 2,
-  STATE_DENIED    = 3,
-  STATE_DISABLED  = 4;
+  use TDatabase, TCache, TId;
 
   /**
    * @property bool $is_new
    *   Флаг, обозначающий является ли текущее данное в модели новым
-   * @property array $ids
-   *   Список последних полученных ид
    */
-  protected
-  $is_new   = true,
-  $ids      = [];
+  protected $is_new = true;
+
+  protected $errors = [];
 
   /**
    * @access protected
    * @property mixed $id
    *   Текущий идентификатор сущности
+   */
+  protected $id = 0;
+
+  /**
    * @property array $data
    *   Данные текущей выборки
-   * @property int $state
-   *   Состояние текущей модели данных
    */
-  protected
-  $id     = 0,
-  $data   = [],
-  $state  = self::STATE_OK
-  ;
+  protected $data   = [];
 
   /**
    * @property array $map Карта всех моделей
    */
   protected static $map = [];
+
+  // Offsets
+  protected $limit  = 0;
+  protected $offset = 0;
+  protected $total = 0;
 
   /**
    * Инициализация и подключение к серверу базы данных
@@ -97,7 +63,7 @@ abstract class Model implements ArrayAccess {
    * @uses Database
    * @uses Config
    */
-  final public function __construct( ) {
+  final public function __construct() {
     $this
       ->initCache()
       ->initDatabase()
@@ -111,22 +77,23 @@ abstract class Model implements ArrayAccess {
     return $this;
   }
 
-  /**
-   * Метод
-   *
-   * @param array $states
-   *    Массив с содержимым ключа состояния и замыкания дял выполенния
-   *   Допустимые значения ключей: ok, fail, denied, disabled
-   * @return $this
-   */
-  public function done(array $states) {
-    $cur = $this->getState( );
-    foreach ($states as $state => $action) {
-      if ($cur === constant('self::STATE_' . strtoupper($state))) {
-        $action();
-      }
-    }
+  public function setOffset($offset) {
+    $this->offset = $offset;
     return $this;
+  }
+
+  public function setLimit($limit) {
+    $this->limit = $limit;
+    return $this;
+  }
+
+  public function setTotal($total) {
+    $this->total = $total;
+    return $this;
+  }
+
+  public function getTotal() {
+    return $this->total;
   }
 
   /**
@@ -135,74 +102,11 @@ abstract class Model implements ArrayAccess {
    * @param array $item
    *   Массив с данными одного элемента
    */
-  protected function prepareResult(array &$item) {}
-
-  /**
-   * Проверка возвращаемых данных на предмет унификации
-   * Добавление необходимых переменных лимитов и постраничного вывода
-   *
-   * @access protected
-   * @param array $result
-   *   Набор данных, которые нужно трансформировать в список
-   * @return array
-   */
-  protected function listResult(array $result) {
-    // Ничего нет? Ну и к черту :D
-    if (!$result)
-      return [];
-
-    $list['items']    = array_values($result);
-    $list['total']    = $this->total;
-    // Добавляем дополнительные данные
-    $list['offset']   = $this->offset;
-    $list['limit']    = $this->limit;
-    $list['page']     = $this->page;
-    $list['max_page'] = $this->max_page;
-    $list['has_items']    = !!$list['items'];
-    $list['has_no_items'] = !$list['items'];
-    // Постраничная навигация: kick it to view
-    $list['pagination'] = Pagination::instance( )
-      ->set([
-        'route'     => Request::instance( )->getRoute(),
-        'params'    => Request::instance( )->param(),
-        'page_name' => 'p',
-        'per_page'  => $list['limit'],
-        'total'     => $list['total'],
-      ])
-      ->getArray();
-
-    // Пост-обработка
-    array_walk($list['items'], [$this, 'prepareResult']);
-    return $list;
-  }
-
-  /**
-   * Необходимая обработка и возврат плоского списка
-   *
-   * @access protected
-   * @param array $flat
-   * @return array
-   */
-  protected function flatResult(array $flat) {
-    $flat = array_filter($flat);
-    array_walk($flat, [$this, 'prepareResult']);
-    return $flat;
-  }
-
-  /**
-   * Создание нового объекта модели
-   *
-   * @access public
-   * @param string|null $name создание объекта модели
-   * @return Model ссылка на объект
-   */
-  final public static function create($name = null) {
-    if (is_null($name)) {
-      $name = static::class;
-    }
-
-    return new $name;
-  }
+  protected function prepare(array &$item) {}
+  protected function onCreate() {}
+  protected function onUpdate() {}
+  protected function onSave() {}
+  protected function onDelete() {}
 
   /**
    * Правила валидации для необходимых полей
@@ -226,92 +130,15 @@ abstract class Model implements ArrayAccess {
   }
 
   /**
-   * Функция для формирования Closures, которые выполняются до
-   * каких-то манипуляций с данными
+   * Создание новой записи в базе и возврат объекта
    *
-   * @return array
-   *
-   * <code>
-   * return ['save' => function () { echo 'I\'m happy taurent!'; }];
-   * </code>
-   */
-  protected function before() {
-    return [];
-  }
-
-  /**
-   * Функция для формирования Closures, которые выполняются
-   * после успешной манипуляци с данными
-   *
-   * @return array
-   */
-  protected function after() {
-    return [];
-  }
-
-  /**
-   * Выполнение обработки до/после манипуляций с данными
-   * согласно определенными правилам self::before() self::after()
-   *
-   * @param string $type
-   * @param string $key
+   * @access public
    * @return $this
    */
-  final protected function processing($type, $key) {
-    $funcs = $this->{$type}();
-    if (isset($funcs[$key])) {
-      $funcs[$key]();
-    }
-    return $this;
-  }
-
-  /**
-   * Функция валидации данных
-   *
-   * @access protected
-   * @param array $data
-   * @return $this
-   *
-   * <code>
-   * $msgs = Model::create('Photo')->save($form)->getMessages();
-   * </code>
-   */
-  protected function validate($data) {
-    foreach ($this->rules( ) as $field => $rule) {
-      if ($this->is_new) { // Если новая запись
-        // Еще нет такого поля? Пишем туда нуль и валидируем
-        if (!isset($data[$field]))
-          $data[$field] = null;
-      } else { // Идет обновление
-        // Не указано поле? Просто пропускаем правило
-        if (!array_key_exists($field, $data))
-          continue;
-      }
-
-      $res = $rule($data[$field]);
-
-      // Не изменилось поле? удаляем
-      if ($data[$field] === null)
-        unset($data[$field]);
-
-      // Если результат не TRUE, то там ошибка
-      if (isset($res) && true !== $res) {
-        $this->addError($field . '_' . $res);
-      }
-    }
-    return $this;
-  }
-
-
-  /**
-   * Нужно добавить запись или обновить?
-   *
-   * @param bool $is_new
-   * @return $this
-   */
-  public function setNew($is_new = true) {
-    $this->is_new = $is_new;
-    return $this;
+  public static function create() {
+    $Obj = new static;
+    $Obj->is_new = true;
+    return $Obj;
   }
 
   /**
@@ -323,55 +150,8 @@ abstract class Model implements ArrayAccess {
    * @return $this
    */
   public function increment(array $counters, array $ids = []) {
-    $this->dbUpdateByIds($counters, $ids ? $ids : [$this->getId()], true);
+    $this->dbUpdateByIds($counters, $ids ?: [$this->getId()], true);
     return $this;
-  }
-
-  /**
-   * Получение нескольких записей по ID
-   *
-   * @param array $ids
-   * @return array
-   */
-  protected function getByIds(array $ids) {
-    $ids = array_unique($ids);
-
-    // Избавляемся от нуль-ид
-    if (false !== $key = array_search(0, $ids, true))
-      unset($ids[$key]);
-
-    $data = $this->isCacheable()
-      ? $this->cacheGetByIds($ids)
-      : [];
-
-    // Если есть промахи в кэш
-    if (($cache_size = sizeof($data)) !== sizeof($ids)) {
-      // Вычисляем разницу для подгрузки
-      $missed = array_values(
-        $cache_size
-          ? array_diff(array_values($ids), array_keys($data))
-          : $ids
-      );
-
-      // Подгружаем только не найденные данные,
-      // попутно сортируя в порядке ID
-      $result = [];
-      $diff   = $missed ? $this->dbGetByIds($this->fields, $missed) : [];
-
-      foreach ($ids as $id) {
-        if (isset($diff[$id]))
-          $this->cacheSet($this->getCacheKey('item', $id), $diff[$id]);
-
-        $result[$id] = isset($diff[$id])
-          ? $diff[$id]
-          : (isset($data[$id]) ? $data[$id] : null);
-      }
-      $data = &$result;
-
-      unset($diff, $missed);  
-    }
-
-    return $this->flatResult($data);
   }
 
   /**
@@ -381,23 +161,14 @@ abstract class Model implements ArrayAccess {
    * @return $this
    *
    * <code>
-   * $result = Model::create('Name')
-   *   ->save($form)
-   *   ->isOk( )
-   * ;
+   * $result = Model::create($form);
    * </code>
    *
    * <code>
-   * $result = Model::create('Name')
-   *   ->setId($id)
-   *   ->save($form)
-   *   ->isOk( )
-   * ;
+   * $result = Model::fetch($id)->save($form);
    * </code>
    */
-  public function save(array $data = []) {
-    // Очищаем прошлые сообщения
-    // $this->flushMessages( );
+  public function save(array $data) {
     // Не пропускаем к базе возможно установленные левые ключи
     $data = array_intersect_key($data, array_flip($this->fields));
     $this->data = array_merge($this->data, $data);
@@ -406,60 +177,44 @@ abstract class Model implements ArrayAccess {
     if (!$this->data)
       return $this;
 
-    // Обрабатываем данные
-    $this->processing('before', 'save');
     // intersect потому что обработка переменных идет на $this->data, посылам только нужные запросы на сервер
     $data = array_intersect_key($this->data, $data);
 
-    // Если что-то не так
-    if (!$this->validate($data)->isOk())
+    if ($this->validate($data)->errors)
       return $this;
 
+    $saved = false;
     // Валидация прошла успешно, обновляем или вставляем новую запись
     if (!$this->is_new) {
       // Если не нужно обновлять главный ключ
       if (isset($this->data['id']) && $this->id === (int) $this->data['id'])
         unset($this->data['id']);
 
-      // Антифлуд
-      if ($this->getTimeout('update'))
-        return $this->addError('update_timeout');
-
-      //$this->update($data);   // ? TT
-      $affected = $this->dbUpdateByIds($data, [$this->id]);
-      $this->setState($affected ? self::STATE_OK : self:: STATE_FAIL);
+      $saved = $this->dbUpdateByIds($data, [$this->id]);
 
       $this->data['id'] = $this->id;
 
       // Обновим кэш завершающим этапом
-      // В кэш обработанные данные через prepareResult не попадают
+      // В кэш обработанные данные через prepare не попадают
       $this->cacheDelete($this->getCacheKey('item', $this->getId()));
-      //$this->cacheSet($this->getCacheKey('item', $this->getId()), $data);
     } else {
-      // Антифлуд защита, если активна
-      if ($this->getTimeout('add'))
-        return $this->addError('add_timeout');;
 
-      // Set via direct field becauze of is_new flag reset on method call
       if (!$this->id)
-        $this->id = $this->generateId();
+        $this->id = static::generateId();
 
       $data['id'] = $this->id;
-      $this->dbInsert($data);
+      $saved = $this->dbInsert($data);
 
       // Дополняем нулл значениями
       $this->data = array_merge(array_fill_keys($this->fields, null), $data);
     }
 
-    // Все ок? вызываем функцию после сохранения
-    if ($this->isOk( )) {
-      $this->addNotice('saved');
-
-      list($this->data) = $this->flatResult([$this->data]);
-
-      // Постпроцессинг
-      $this->processing('after', 'save');
+    if ($saved) {
+      $this->is_new ? $this->onCreate() : $this->onUpdate();
+      $this->onSave();
     }
+
+    $this->prepare($this->data);
 
     return $this;
   }
@@ -471,25 +226,20 @@ abstract class Model implements ArrayAccess {
    * @return int
    *   Число удаленных строк 0/1
    */
-  public function delete(array $ids = []) {
-    if ($this->getTimeout('delete'))
-      return $this->addError('delete_timeout');
+  public function delete() {
+    $deleted = $this->dbDeleteByIds([$this->id]);
 
-    if (!$ids && $this->getId()) {
-      $this->get();
-      $this->processing('before', 'delete');
-    }
-    $deleted = $this->dbDeleteByIds($ids ? $ids : [$this->id]);
-    $this->setState($deleted ? self::STATE_OK : self::STATE_FAIL);
-
-    if ($this->isOk() && $this->getId())
-      $this->processing('after', 'delete');
-
-    // Если было успешно удалено
-    if ($deleted && !$ids)
+    if ($deleted) {
+      $this->onDelete();
+      $this->is_new = true;
       $this->data = [];
+      $this->id = 0;
+    }
+    return $deleted;
+  }
 
-    return $this;
+  public function deleteByIds(array $ids) {
+    return $this->dbDeleteByIds($ids);
   }
 
   /**
@@ -499,63 +249,9 @@ abstract class Model implements ArrayAccess {
    * @return int
    */
   public function deleteBy(array $cond = []) {
-    return $this->setState($deleted = $this->dbDelete($cond, 'AND')
-        ? self::STATE_OK
-        : self::STATE_FAIL
-    );
+    return $deleted = $this->dbDelete($cond, 'AND');
   }
 
-  /**
-   * Установка состояния модели
-   *
-   * @access protected
-   * @param int $state
-   * @return $this
-   */
-  protected function setState($state) {
-    if (in_array($state, [self::STATE_OK, self::STATE_FAIL, self::STATE_DENIED], true)) {
-      $this->state = $state;
-    }
-    return $this;
-  }
-
-  /**
-   * Получение текущего состояния модели
-   *
-   * @access protected
-   * @return int
-   */
-  protected function getState( ) {
-    return $this->state;
-  }
-
-  /**
-   * Если все хорошо и проблем нет (по умолчанию)
-   *
-   * @access public
-   * @return bool
-   */
-  public function isOk( ) {
-    return $this->state === self::STATE_OK;
-  }
-
-  /**
-   * Установка текущей ID сущности
-   *
-   * @access public
-   * @param int $id
-   * @return $this
-   */
-  public function setId($id) {
-    $this->id = (string) $id;
-
-    // Новая запись?
-    $this->is_new = !$this->id;
-
-    // Инвалидируем данные
-    $this->data = [];
-    return $this;
-  }
 
   /**
    * Получение текущей ID сущности
@@ -563,7 +259,7 @@ abstract class Model implements ArrayAccess {
    * @access public
    * @return int
    */
-  public function getId( ) {
+  public function getId() {
     return $this->id;
   }
 
@@ -584,82 +280,124 @@ abstract class Model implements ArrayAccess {
   }
 
   /**
-   * Получение текущих установленных данных
-   *
-   * @access public
-   * @param int|array $id
-   * @return array
-   */
-  public function get($id = null) {
-    $id = isset($id) ? $id : $this->id;
-
-    // Nothing to get?
-    if (!$id)
-      return false;
-
-    if (is_array($id)) { // Нужно получить по идам?
-      return $this->getByIds($id);
-    } elseif (!$this->getId()) { // Если данных не было установлено, пытаемся найти их
-      if ($rows = $this->getByIds([$id])) {
-        $this->setId($id)->set(array_shift($rows));
-      }
-    }
-
-    return $this->data;
-  }
-
-  /**
    * Получение текущих установленных данных и возвращение ссылки на объект
    *
    * @access public
    * @param int $id
    * @return $this
    */
-  public static function fetch($id) {
+  public static function get($id) {
     $key = static::class . '-' . $id;
     if (!isset(self::$map[$key])) {
-      self::$map[$key] = static::create()->load($id);
+      self::$map[$key] = (new static)->load($id);
     }
 
     return self::$map[$key];
   }
 
-  public function load($id) {
-    $this->get($id);
-    return $this;
-  }
-
   /**
-   * Установка данных сущности
+   * Получение нескольких записей по ID
    *
-   * @access public
-   * @param array $data
-   * @return $this
-   */
-  public function set($k, $v = null) {
-    if (is_string($k)) {
-      $this->data[$k] = $v;
-    } else {
-      $this->data = $k;
-    }
-
-    return $this;
-  }
-
-  /**
    * @param array $ids
-   * @return string
-   */
-  protected function packIds(array $ids) {
-    return implode(', ', $ids);
-  }
-
-  /**
-   * @param string $id_string
    * @return array
    */
-  protected function unpackIds($id_string) {
-    assert("is_string(\$id_string)");
-    return $id_string ? array_map('trim', explode(',', $id_string)) : [];
+  public static function getByIds(array $ids) {
+    $ids = array_unique($ids);
+
+    // Избавляемся от нуль-ид
+    if (false !== $key = array_search(0, $ids, true))
+      unset($ids[$key]);
+
+    $Obj = new static;
+    $data = $Obj->isCacheable()
+      ? $Obj->cacheGetByIds($ids)
+      : [];
+
+    // Если есть промахи в кэш
+    if (($cache_size = sizeof($data)) !== sizeof($ids)) {
+      // Вычисляем разницу для подгрузки
+      $missed = array_values(
+        $cache_size
+          ? array_diff(array_values($ids), array_keys($data))
+          : $ids
+      );
+
+      // Подгружаем только не найденные данные,
+      // попутно сортируя в порядке ID
+      $result = [];
+      $diff   = $missed ? $Obj->dbGetByIds($Obj->fields, $missed) : [];
+
+      foreach ($ids as $id) {
+        if (isset($diff[$id]))
+          $Obj->cacheSet($Obj->getCacheKey('item', $id), $diff[$id]);
+
+        $result[$id] = isset($diff[$id])
+          ? $diff[$id]
+          : (isset($data[$id]) ? $data[$id] : null);
+      }
+      $data = &$result;
+    }
+    $data = array_filter($data);
+    array_walk($data, [$Obj, 'prepare']);
+    return $data;
+  }
+
+  /**
+   * Загрузка из базы данных в текущий инстанс объекта
+   *
+   * @param int $id
+   * @return $this
+   */
+  protected function load($id) {
+    if ($rows = $this->getByIds([$id])) {
+      $this->is_new = false;
+      $this->id = $id;
+      $row = array_shift($rows);
+      $this->prepare($row);
+      $this->data = $row;
+    }
+    return $this;
+  }
+
+
+  /**
+   * Функция валидации данных
+   *
+   * @access protected
+   * @param array $data
+   * @return $this
+   *
+   * <code>
+   * $msgs = Photo::create()->save($form)->getErrors();
+   * </code>
+   */
+  protected function validate($data) {
+    foreach ($this->rules() as $field => $rule) {
+      if ($this->is_new) { // Если новая запись
+        // Еще нет такого поля? Пишем туда нуль и валидируем
+        if (!isset($data[$field]))
+          $data[$field] = null;
+      } else { // Идет обновление
+        // Не указано поле? Просто пропускаем правило
+        if (!array_key_exists($field, $data))
+          continue;
+      }
+
+      $res = $rule($data[$field]);
+
+      // Не изменилось поле? удаляем
+      if ($data[$field] === null)
+        unset($data[$field]);
+
+      // Если результат не TRUE, то там ошибка
+      if (isset($res) && true !== $res) {
+        $this->errors[$field . '_' . $res] = true;
+      }
+    }
+    return $this;
+  }
+
+  public function getErrors() {
+    return $this->errors;
   }
 }

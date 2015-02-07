@@ -1,2 +1,0 @@
-#!/bin/bash
-echo "include getenv('APP_DIR') . '/plugins/hrdate/hrdate.php'; # hrdate PLUGIN" >> $APP_DIR/core.php
