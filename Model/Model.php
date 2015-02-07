@@ -179,7 +179,7 @@ abstract class Model implements ArrayAccess {
     // Валидация прошла успешно, обновляем или вставляем новую запись
     if (!$this->is_new) {
       // Если не нужно обновлять главный ключ
-      if (isset($this->data['id']) && $this->id === (int) $this->data['id'])
+      if (isset($this->data['id']) && $this->id === (string) $this->data['id'])
         unset($this->data['id']);
 
       $saved = $this->dbUpdateByIds($data, [$this->id]);
@@ -190,6 +190,9 @@ abstract class Model implements ArrayAccess {
       // В кэш обработанные данные через prepare не попадают
       $this->cacheDelete($this->getCacheKey('item', $this->getId()));
     } else {
+      if (isset($data['id'])) {
+        $this->id = (string) $data['id'];
+      }
 
       if (!$this->id)
         $this->id = static::generateId();
@@ -347,7 +350,7 @@ abstract class Model implements ArrayAccess {
   protected function load($id) {
     if ($rows = $this->getByIds([$id])) {
       $this->is_new = false;
-      $this->id = $id;
+      $this->id = (string) $id;
       $row = array_shift($rows);
       $this->prepare($row);
       $this->data = $row;
@@ -393,18 +396,19 @@ abstract class Model implements ArrayAccess {
     return $this;
   }
 
-  public function getErrors() {
-    return $this->errors;
-  }
-
-  public function addError($error) {
+  protected function addError($error) {
     $this->errors['e_' . strtolower(static::class) . '_' . $error] = true;
     return $this;
   }
 
+  public function getErrors() {
+    return $this->errors;
+  }
+
   public function done(&$errors, Closure $callback = null) {
-    $errors = $this->getErrors();
-    $callback && $callback();
-    return $this; 
+    if (!$errors = $this->getErrors()) {
+      $callback && $callback();
+    }
+    return $this;
   }
 }

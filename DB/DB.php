@@ -61,7 +61,7 @@ class DB {
     // Определяем результат работы функции в зависимости от типа запроса к базе
     switch (strtolower(strtok($query, ' '))) {
       case 'insert':
-        return $DB->insert_id;
+        return $DB->insert_id ?: $DB->affected_rows;
         break;
 
       case 'update':
