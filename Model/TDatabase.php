@@ -73,8 +73,8 @@ trait TDatabase {
    * @return mixed
    * @throws Exception
    */
-  protected function dbQuery($query, array $params = []) {
-    return DB::query($query, $params, $this->dbShardId($params));
+  protected static function dbQuery($query, array $params = []) {
+    return DB::query($query, $params, static::dbShardId($params));
   }
 
   /**
@@ -83,7 +83,7 @@ trait TDatabase {
    * @param array $params
    * @return int
    */
-  protected function dbShardId(array $params = null) {
+  protected static function dbShardId(array $params = null) {
     return 0;
   }
 
@@ -97,7 +97,7 @@ trait TDatabase {
   protected function dbGetFields( ) {
     return $this->getCacheable('db:scheme:' . $this->table, function () {
       $fields = [];
-      if ($data = $this->dbQuery('DESCRIBE ' . $this->table)) {
+      if ($data = static::dbQuery('DESCRIBE ' . $this->table)) {
         $fields = array_column($data, 'Field');
       }
       return $fields;
@@ -117,7 +117,7 @@ trait TDatabase {
   protected function dbInsert(array $params) {
     $q = 'INSERT INTO ' . $this->table
       . ' SET ' . self::dbGetSqlStringByParams($params, ',');
-    return $this->dbQuery($q, $params);
+    return static::dbQuery($q, $params);
   }
 
   /**
@@ -208,7 +208,7 @@ trait TDatabase {
     $q = 'SELECT COUNT(*) AS `count` FROM ' . $this->table
       . ($where ? ' WHERE ' . implode('AND', $where) : '')
       . ' LIMIT 1';
-    $rows = $this->dbQuery($q, $conditions);
+    $rows = static::dbQuery($q, $conditions);
     $count = 0;
     if (isset($rows[0])) {
       $count = (int) $rows[0]['count'];
@@ -241,7 +241,7 @@ trait TDatabase {
     $q = 'UPDATE ' . $this->table
       . ' SET ' . self::dbGetSqlStringByParams($params, ',', $incremental)
       . ' WHERE ' . self::dbGetSqlStringByParams($conditions, ' AND ');
-    return $this->dbQuery($q, array_merge($params, $conditions));
+    return static::dbQuery($q, array_merge($params, $conditions));
   }
 
   /**
@@ -262,7 +262,7 @@ trait TDatabase {
       . ' SET ' . self::dbGetSqlStringByParams($params, ',', $incremental)
       . ' WHERE `id` IN (:' . implode(', :', $id_params) . ')';
 
-    return $this->dbQuery($q, array_merge($params, array_combine($id_params, $ids)));
+    return static::dbQuery($q, array_merge($params, array_combine($id_params, $ids)));
   }
 
   /**
@@ -277,7 +277,7 @@ trait TDatabase {
   protected function dbDelete(array $conditions) {
     $q = 'DELETE FROM ' . $this->table
       . ' WHERE ' . self::dbGetSqlStringByParams($conditions, ' AND ');
-    return $this->dbQuery($q, $conditions);
+    return static::dbQuery($q, $conditions);
   }
 
   /**
@@ -298,7 +298,7 @@ trait TDatabase {
   protected function dbDeleteByRowValues($row, array $values) {
     $q = 'DELETE FROM ' . $this->table
       . ' WHERE `' . $row . '` IN (' . trim(str_repeat('?,', sizeof($values)), ',') . ')';
-    return $this->dbQuery($q, $values);
+    return static::dbQuery($q, $values);
   }
 
   /**
@@ -385,7 +385,7 @@ trait TDatabase {
     if (isset($prev_value))
       $params['prev_value'] = $prev_value;
 
-    return $this->dbQuery($q, $params);
+    return static::dbQuery($q, $params);
   }
 
   /**

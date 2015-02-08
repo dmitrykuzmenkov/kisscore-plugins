@@ -208,7 +208,7 @@ abstract class Model implements ArrayAccess {
       $this->is_new ? $this->onCreate() : $this->onUpdate();
       $this->onSave();
     }
-
+    $this->is_new = false;
     $this->prepare($this->data);
 
     return $this;
