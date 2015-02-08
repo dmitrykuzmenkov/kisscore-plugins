@@ -331,7 +331,7 @@ abstract class Model implements ArrayAccess {
    * @param int $id
    * @return $this
    */
-  protected function load($id) {
+  public function load($id) {
     if ($rows = $this->getByIds([$id])) {
       $this->is_new = false;
       $this->id = (string) $id;
