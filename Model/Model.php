@@ -138,6 +138,13 @@ abstract class Model implements ArrayAccess {
     return $this;
   }
 
+  public static function incrementAll(array $counters) {
+    return static::dbQuery(
+      'UPDATE ' . static::create()->table . ' SET ' . self::dbGetSqlStringByParams($counters, ',', true),
+      $counters
+    );
+  }
+
   /**
    * Сохранение записи
    *
