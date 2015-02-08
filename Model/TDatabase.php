@@ -388,6 +388,29 @@ trait TDatabase {
     return static::dbQuery($q, $params);
   }
 
+  protected function dbGetPaginated($query, array $params = []) {
+    assert('is_string($query)');
+    $total = $this->Pagination ? $this->Pagination->getTotal() : 0;
+    $query = 'SELECT %s FROM ' . $this->table . ' ' . $query . ' LIMIT %d, %d';
+
+    if (!$total) {
+      $row = self::dbQuery(sprintf($query, ...['COUNT(*) AS `count`', 0, 1]), $params);
+      $total = $row ? $row[0]['count'] : 0;
+    }
+
+    $offset = null;
+    $limit = null;
+    if ($this->Pagination) {
+      $this->Pagination->setTotal($total);
+      $offset = $this->Pagination->getOffset();
+      $limit = $this->Pagination->getLimit();
+    }
+
+    $result = $total ? self::dbQuery(sprintf($query, ...['*', $offset, $limit]), $params) : [];
+    array_walk($result, [$this, 'prepare']);
+    return $result;
+  }
+
   /**
    * Получение всего списка с данными или списка по условию
    *
