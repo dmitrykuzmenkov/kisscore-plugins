@@ -394,12 +394,20 @@ trait TDatabase {
    * @see self::getList( );
    */
   public function getList(array $conditions = [], array $order = []) {
-    // Если было установлено
-    if (!$this->total)
-      $this->total = $this->dbCount($conditions);
+    $total = $this->Pagination ? $this->Pagination->getTotal() : 0;
 
+    if (!$total)
+      $total = $this->dbCount($conditions);
+
+    $offset = null;
+    $limit = null;
+    if ($this->Pagination) {
+      $this->Pagination->setTotal($total);
+      $offset = $this->Pagination->getOffset();
+      $limit = $this->Pagination->getLimit();
+    }
     return static::getByIds(
-      $this->total ? array_column($this->dbSelect(['id'], $conditions, $order, $this->offset, $this->limit), 'id') : []
+      $total ? array_column($this->dbSelect(['id'], $conditions, $order, $offset, $limit), 'id') : []
     );
   }
 }

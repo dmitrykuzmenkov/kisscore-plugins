@@ -15,8 +15,8 @@ class Pagination {
    * @property string $params Параметры для создания урл
    */
   private
-  $limit     = 1000,
-  $total        = 1000,
+  $limit        = 1000,
+  $total        = 0,
   $page_name    = 'p',
   $default_page = 1,
   $route        = '',
@@ -50,14 +50,6 @@ class Pagination {
       $Obj->params = Request::instance()->param();
     }
 
-    // Если лимита не указано, ставим максимальным
-    if (!$Obj->limit)
-      $Obj->limit = $Obj->total;
-
-    $Obj->max_page = $Obj->total ? (int) ceil($Obj->total / $Obj->limit) : 1;
-
-    // Определяем начало для выборки данных
-    $Obj->offset = ($Obj->getCurrentPage() - 1) * $Obj->limit;
     return $Obj;
   }
 
@@ -82,11 +74,25 @@ class Pagination {
     if ($page < 1) {
       $page = 1;
     }
+    // Hot fix ffs
     return $page > ($last_page = $this->getLastPage()) ? $last_page : $page;
   }
 
+  public function getMaxPage() {
+    return $this->getTotal() ? (int) ceil($this->getTotal() / $this->limit) : 1;
+  }
+
+  public function getOffset() {
+    return ($this->getCurrentPage() - 1) * $this->getLimit();
+  }
+
   public function getLimit() {
-    return $this->limit;
+    return $this->limit ?: $this->total;
+  }
+
+  public function setTotal($total) {
+    $this->total = $total;
+    return $this;
   }
 
   public function getTotal() {
@@ -102,11 +108,6 @@ class Pagination {
     return ($this->total && $this->limit)
       ? (int) ceil($this->total / $this->limit)
       : 1;
-  }
-
-  public function setTotal($total) {
-    $this->total = $total;
-    return $this;
   }
 
   /**
@@ -169,25 +170,14 @@ class Pagination {
 
     return [
       'items'   => array_values($result),
-      'total'   => $this->total,
-      'offset'  => $this->offset,
-      'limit'   => $this->limit,
-      'page'    => $this->page,
-      'max_page'      => $this->max_page,
+      'total'   => $this->getTotal(),
+      'offset'  => $this->getOffset(),
+      'limit'   => $this->getLimit(),
+      'page'    => $this->getCurrentPage(),
+      'max_page'      => $this->getLastPage(),
       'has_items'     => !!$result,
       'has_no_items'  => !$result,
       'pagination' => $this->getArray()
     ];
-  }
-
-  /**
-   * Необходимая обработка и возврат плоского списка
-   *
-   * @access protected
-   * @param array $flat
-   * @return array
-   */
-  public function flatResult(array $flat) {
-    return array_filter($flat);
   }
 }

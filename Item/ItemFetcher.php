@@ -112,12 +112,7 @@ class ItemFetcher extends ItemManager {
     if (!$this->data) { // Если данных не было передано, подгружаем
       $Obj = new $this->model;
       if ($this->Pagination) {
-        $offset = ($this->Pagination->getCurrentPage() - 1) * $this->Pagination->getLimit();
-        $Obj
-          ->setOffset($offset)
-          ->setLimit($this->Pagination->getLimit())
-          ->setTotal($this->Pagination->getTotal())
-        ;
+        $Obj->setPagination($this->Pagination);
       }
 
       // Хапаем основные данные
@@ -132,7 +127,7 @@ class ItemFetcher extends ItemManager {
 
       // Refactor this shit later
       if ($this->Pagination) {
-        $this->data = $this->Pagination->setTotal($Obj->getTotal())->listResult($this->data);
+        $this->data = $this->Pagination->listResult($this->data);
       }
     }
 

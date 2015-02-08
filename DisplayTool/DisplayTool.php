@@ -10,7 +10,7 @@ class DisplayTool {
    */
   public static function hrdate($date, $format = 'datetime') {
     $ts   = is_int($date) ? $date : strtotime($date);
-    $now  = filter_input(INPUT_SERVER, 'REQUEST_TIME');
+    $now  = time();
     $diff = $now - $ts;
 
     // Краткие формы только для даты со временем

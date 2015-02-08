@@ -53,9 +53,7 @@ abstract class Model implements ArrayAccess {
   protected static $map = [];
 
   // Offsets
-  protected $limit  = 0;
-  protected $offset = 0;
-  protected $total = 0;
+  protected $Pagination = null;
 
   /**
    * Инициализация и подключение к серверу базы данных
@@ -70,30 +68,16 @@ abstract class Model implements ArrayAccess {
       ->init();
   }
 
+  public function setPagination(Pagination $Pagination) {
+    $this->Pagination = $Pagination;
+    return $this;
+  }
+
   /**
    * @return $this
    */
   protected function init() {
     return $this;
-  }
-
-  public function setOffset($offset) {
-    $this->offset = $offset;
-    return $this;
-  }
-
-  public function setLimit($limit) {
-    $this->limit = $limit;
-    return $this;
-  }
-
-  public function setTotal($total) {
-    $this->total = $total;
-    return $this;
-  }
-
-  public function getTotal() {
-    return $this->total;
   }
 
   /**
@@ -193,7 +177,6 @@ abstract class Model implements ArrayAccess {
       if (isset($data['id'])) {
         $this->id = (string) $data['id'];
       }
-
       if (!$this->id)
         $this->id = static::generateId();
 
@@ -209,6 +192,7 @@ abstract class Model implements ArrayAccess {
       $this->onSave();
     }
     $this->is_new = false;
+
     $this->prepare($this->data);
 
     return $this;
@@ -396,13 +380,13 @@ abstract class Model implements ArrayAccess {
     return $this;
   }
 
+  public function getErrors() {
+    return $this->errors;
+  }
+
   protected function addError($error) {
     $this->errors['e_' . strtolower(static::class) . '_' . $error] = true;
     return $this;
-  }
-
-  public function getErrors() {
-    return $this->errors;
   }
 
   public function done(&$errors, Closure $callback = null) {
