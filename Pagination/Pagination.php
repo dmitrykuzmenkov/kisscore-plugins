@@ -43,11 +43,11 @@ class Pagination {
       $Obj->$k = $v;
     }
     if (!$Obj->route) {
-      $Obj->route = Request::instance()->getRoute();
+      $Obj->route = Input::get('ROUTE');
     }
 
     if (!$Obj->params) {
-      $Obj->params = Request::instance()->param();
+      $Obj->params = Input::get();
     }
 
     return $Obj;
@@ -68,9 +68,7 @@ class Pagination {
    * @return int
    */
   public function getCurrentPage() {
-    $page = (int) Request::instance()
-      ->param($this->page_name, $this->default_page)
-    ;
+    $page = (int) Input::get($this->page_name, $this->default_page);
     if ($page < 1) {
       $page = 1;
     }
@@ -119,7 +117,7 @@ class Pagination {
     $data = [];
     // Если не установлен роут, используем текущий
     if (!$route = $this->getRoute()) {
-      $route = Request::instance()->getRoute();
+      $route = Input::get('ROUTE');
     }
     $cur_page   = $this->getCurrentPage();
     $last_page  = $this->getLastPage();
@@ -130,7 +128,7 @@ class Pagination {
     $data['last']       = $last_page;
 
     $url = function ($page) {
-      return '/' . Request::instance()->getRoute() . '?' . $this->page_name . '=' . $page;
+      return '/' . Input::get('ROUTE') . '?' . $this->page_name . '=' . $page;
     };
 
     $data['prev_url'] = '';
