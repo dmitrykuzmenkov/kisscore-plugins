@@ -134,7 +134,7 @@ trait TCache {
       $params = &$args[0];
     else $params = &$args;
 
-    $pattern = Request::instance()->getHost() . ':' . $this->cache_keys[$key];
+    $pattern = getenv('PROJECT') . ':' . $this->cache_keys[$key];
 
     return $params
       ? vsprintf($pattern, $params)
