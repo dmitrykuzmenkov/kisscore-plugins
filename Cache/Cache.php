@@ -78,6 +78,14 @@ class Cache {
       : 'connect';
 
     $this->Memcache = new Memcached;
+    $this->Memcache->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
+    //$this->Memcache->setOption(Memcached::OPT_SERIALIZER, Memcached::SERIALIZER_JSON);
+    $this->Memcache->setOption(Memcached::OPT_COMPRESSION, true);
+    $this->Memcache->setOption(Memcached::OPT_CONNECT_TIMEOUT, 50);
+    $this->Memcache->setOption(Memcached::OPT_RETRY_TIMEOUT, 50);
+    $this->Memcache->setOption(Memcached::OPT_SEND_TIMEOUT, 50);
+    $this->Memcache->setOption(Memcached::OPT_RECV_TIMEOUT, 50);
+    $this->Memcache->setOption(Memcached::OPT_POLL_TIMEOUT, 50);
     if (!$this->Memcache->addServer($this->host, $this->port)) {
       App::error('Ошибка при попытке подключения к серверу кэша в оперативной памяти.');
     }
@@ -111,6 +119,14 @@ class Cache {
     }
 
     return $items;
+  }
+
+  public function getCas($key) {
+    return $this->doCommand('getCas', [$key]);
+  }
+
+  public function setWithCas($key, $val, $token) {
+    return $this->doCommand('setWithCas', [$key, $val, $token]);
   }
 
   /**
