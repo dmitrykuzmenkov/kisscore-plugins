@@ -38,21 +38,10 @@ trait TCache {
   /**
    * Проверка, разрешено ли кэширование вообще, а также установка флага на текущий объект
    *
-   * @param bool|null $flag
    * @return bool
    */
-  public function isCacheable($flag = null) {
-    static $is_cacheable = null;
-
-    // Инициализация из фалаг класса?
-    if (!isset($is_cacheable))
-      $is_cacheable = property_exists($this, 'is_cacheable') ? $this->is_cacheable : false;
-
-    // изменение?
-    if (isset($flag))
-      $is_cacheable = (bool) $flag;
-
-    return $is_cacheable;
+  public function isCacheable() {
+    return !App::$debug;
   }
 
   /**
