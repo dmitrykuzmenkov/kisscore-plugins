@@ -63,6 +63,13 @@ sort_buffer_size	= 4M
 bulk_insert_buffer_size	= 16M
 tmp_table_size		= 32M
 max_heap_table_size	= 32M
+
+# This should be set to average number of connections * number
+# of your most commonly accessed tables. So, if, on average
+# you have 50 connections and have 5 frequently accessed tables,
+# set this as 250. The default is low (64)
+table_cache = 250
+
 #
 # * MyISAM
 #
@@ -81,9 +88,13 @@ read_rnd_buffer_size	= 1M
 #
 # Cache only tiny result sets, so we can fit more in the query cache.
 query_cache_limit		= 128K
-query_cache_size		= 64M
-# for more write intensive setups, set to DEMAND or OFF
-#query_cache_type		= DEMAND
+
+# Disable the query cache. Both of these must be set as 0 due
+# to a bug in MySQL. The query cache adds a global lock and
+# performs poorly with a non-trivial write-load.
+query_cache_size        = 0
+query_cache_type        = 0
+
 #
 # * Logging and Replication
 #
