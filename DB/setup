@@ -7,6 +7,7 @@ mysql_password=$(</dev/urandom tr -dc A-Za-z0-9 | head -c40)
 mysql_config=$CONFIG_DIR'/mariadb.cnf'
 
 app_config mysql "
+connect_timeout=1
 host='$mysql_ip'
 port=$mysql_port
 user='$mysql_user'

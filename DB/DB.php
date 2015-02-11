@@ -40,7 +40,9 @@ class DB {
 
       $DB = &static::$pool[$shard_id];
 
-      $DB = new mysqli($dsn_key('host'), $dsn_key('user'), $dsn_key('password'), $dsn_key('dbname'), $dsn_key('port'));
+      $DB = mysqli_init();
+      $DB->options(MYSQLI_OPT_CONNECT_TIMEOUT, config('mysql.connect_timeout'));
+      $DB->real_connect($dsn_key('host'), $dsn_key('user'), $dsn_key('password'), $dsn_key('dbname'), $dsn_key('port'));
     }
 
     $DB = &static::$pool[$shard_id];
