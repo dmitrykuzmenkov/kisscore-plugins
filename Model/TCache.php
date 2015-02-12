@@ -24,8 +24,6 @@ trait TCache {
    * @return $this
    */
   public function initCache() {
-    $this->Cache = Cache::getConnection(config('memcache.host'), config('memcache.port'), (bool) config('memcache.persistent'));
-
     // Кэш ключ для значения по ид self::getByIds()
     $this->cache_keys['item']   = static::class . ':%s';
 
@@ -40,7 +38,7 @@ trait TCache {
    *
    * @return bool
    */
-  public function isCacheable() {
+  public function isCacheable($flag = null) {
     return !App::$debug;
   }
 
@@ -68,7 +66,7 @@ trait TCache {
 
     // Кэш включен, проверяем
     $key = $this->getCacheKey('custom', $id);
-    if (false === $data = $this->Cache->get($key))
+    if (false === $data = Cache::get($key))
       $this->cacheSet($key, $data = $fetcher());
 
     return $data;
@@ -76,17 +74,17 @@ trait TCache {
 
 
   protected function cacheSet($key, $value) {
-    $this->Cache->set($key, $value);
+    Cache::set($key, $value);
     return $this;
   }
 
   protected function cacheDelete($key) {
-    $this->Cache->delete($key);
+    Cache::delete($key);
     return $this;
   }
 
   protected function cacheGet($key) {
-    return $this->Cache->get($key);
+    return Cache::get($key);
   }
 
   /**
@@ -99,7 +97,7 @@ trait TCache {
    */
   protected function cacheGetByIds(array $ids) {
     $result = [];
-    foreach ($this->Cache->get($this->getCacheKeys('item', $ids)) as $item) {
+    foreach (Cache::get($this->getCacheKeys('item', $ids)) as $item) {
       $result[$item['id']] = $item;
     }
     return $result;
