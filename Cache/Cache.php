@@ -38,17 +38,6 @@ class Cache {
   }
 
   /**
-   * Выполнение комманды к серверу
-   *
-   * @param string $command
-   * @param array $data
-   * @return mixed
-   */
-  protected static function doCommand($command, array $data = []) {
-    return call_user_func_array([static::connect(), $command], $data);
-  }
-
-  /**
    * Получение данных из кэша по ключу
    *
    * @param mixed $key
@@ -56,7 +45,7 @@ class Cache {
    * @return mixed кэшированное данное
    */
   public static function get($key, $default = null) {
-    $items = static::doCommand(is_string($key) ? 'get' : 'getMulti', [$key]);
+    $items = is_string($key) ? static::connect()->get($key) : static::connect()->getMulti($key);
 
     // Если массив, то нужно выполнить преобразования для возвращаемых данных
     if (is_array($key)) {
@@ -84,11 +73,11 @@ class Cache {
   }
 
   public static function getCas($key) {
-    return static::doCommand('getCas', [$key]);
+    return static::connect()->getCas($key);
   }
 
   public static function setWithCas($key, $val, $token) {
-    return static::doCommand('setWithCas', [$key, $val, $token]);
+    return static::connect()->setWithCas($key, $val, $token);
   }
 
   /**
@@ -110,13 +99,10 @@ class Cache {
       $ttl = $args[1];
       $ret = [];
       foreach ($args as $key => $val) {
-        $ret[] = static::doCommand('setMulti', [
-          $key,
-          $val // Выступает в качестве $ttl
-        ]);
+        $ret[] = static::connect()->setMulti($key, $val); // $val as $ttl
       }
     } else {
-      $ret = static::doCommand('set', [$key, $val, $ttl]);
+      $ret = static::connect()->set($key, $val, $ttl);
     }
     return $ret;
   }
@@ -130,7 +116,7 @@ class Cache {
    * @return bool
    */
   public static function add($key, $val, $ttl = 0) {
-    return static::doCommand('add', [$key, $val, $ttl]);
+    return static::connect()->add($key, $val, $ttl);
   }
 
   /**
@@ -141,7 +127,7 @@ class Cache {
   * @return bool
   */
   public static function append($key, $val) {
-    return static::doCommand('append', [$key, $val]);
+    return static::connect()->append($key, $val);
   }
 
   /**
@@ -152,7 +138,7 @@ class Cache {
    * @return bool
    */
   public static function prepend($key, $val) {
-    return static::doCommand('prepend', [$key, $val]);
+    return static::connect()->prepend($key, $val);
   }
 
   /**
@@ -171,7 +157,7 @@ class Cache {
    * @see self::delete()
    */
   public static function remove($key) {
-    return static::doCommand('delete', [$key]);
+    return static::connect()->delete($key);
   }
 
   /**
@@ -183,7 +169,7 @@ class Cache {
    * @return mixed Новое значение с учетом увеличения или FALSE
    */
   public static function increment($key, $count = 1) {
-    if (false === $result = static::doCommand('increment', [$key, $count])) {
+    if (false === $result = static::connect()->increment($key, $count)) {
       static::set($key, $count);
       return $count;
     }
@@ -204,6 +190,6 @@ class Cache {
    * @return bool
    */
   public static function flush() {
-    return static::doCommand('flush');
+    return static::connect()->flush();
   }
 }
