@@ -54,7 +54,7 @@ class Cache {
       if (!$items) {
         $items = [];
       } else {
-        $map = array_flip($key); unset($key);
+        $map = array_flip($key);
         //$result = new SplFixedArray(sizeof($items));
         foreach ($items as $k => $item) {
           $result[$map[$k]] = $item;

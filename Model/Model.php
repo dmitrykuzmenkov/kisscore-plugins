@@ -24,7 +24,7 @@
  * </code>
  */
 abstract class Model implements ArrayAccess {
-  use TDatabase, TCache, TId;
+  use TDatabase, TId;
 
   /**
    * @property bool $is_new
@@ -33,6 +33,7 @@ abstract class Model implements ArrayAccess {
   protected $is_new = true;
 
   protected $errors = [];
+  protected $is_cacheable = false;
 
   /**
    * @access protected
@@ -63,7 +64,6 @@ abstract class Model implements ArrayAccess {
    */
   final public function __construct() {
     $this
-      ->initCache()
       ->initDatabase()
       ->init();
   }
@@ -179,7 +179,7 @@ abstract class Model implements ArrayAccess {
 
       // Обновим кэш завершающим этапом
       // В кэш обработанные данные через prepare не попадают
-      $this->cacheDelete($this->getCacheKey('item', $this->getId()));
+      Cache::remove(static::class . ':' . $this->getId());
     } else {
       if (isset($data['id'])) {
         $this->id = (string) $data['id'];
@@ -299,9 +299,14 @@ abstract class Model implements ArrayAccess {
       unset($ids[$key]);
 
     $Obj = new static;
-    $data = $Obj->isCacheable()
-      ? $Obj->cacheGetByIds($ids)
-      : [];
+    $data = [];
+    $key_ptrn = static::class . ':%s';
+    if ($Obj->is_cacheable) {
+      foreach ((array) Cache::get(array_map(function ($item) use ($key_ptrn) { return sprintf($key_ptrn, $item); }, $ids)) as $idx => &$val) {
+        $data[$ids[$idx]] = $val;
+      }
+
+    }
 
     // Если есть промахи в кэш
     if (($cache_size = sizeof($data)) !== sizeof($ids)) {
@@ -319,7 +324,7 @@ abstract class Model implements ArrayAccess {
 
       foreach ($ids as $id) {
         if (isset($diff[$id]))
-          $Obj->cacheSet($Obj->getCacheKey('item', $id), $diff[$id]);
+          Cache::set(sprintf($key_ptrn, $id), $diff[$id]);
 
         $result[$id] = isset($diff[$id])
           ? $diff[$id]
@@ -401,5 +406,9 @@ abstract class Model implements ArrayAccess {
       $callback && $callback();
     }
     return $this;
+  }
+
+  protected function getCacheable($key, Closure $func) {
+    return $this->is_cacheable ? Cache::get($key, $func) : $func();
   }
 }
