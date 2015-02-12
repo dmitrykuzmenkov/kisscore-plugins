@@ -11,95 +11,41 @@
 * @subpackage Cache
 */
 class Cache {
-  /**
-   * @property array $instances Пул коннектов
-   * @property string $host
-   * @property int $port
-   * @property bool $persistent
-   * @property object $Memcache ссылка на объект для работы с Memcache
-   * @property bool $is_connected флаг состояния подключения с сервисом кэширования
-   * @property array $stack локальный стек для хранения получаемых данных из кэша
-   */
-  protected static $instances = [];
-  protected
-  $host          = '',
-  $port          = '',
-  $persistent    = true,
-  $Memcache      = null,
-  $is_connected  = false,
-  $stack         = [];
-
-  /**
-   * Инициализация настроек для последующего соединения
-   *
-   * @param string $host хост подключения
-   * @param int $port порт подключения
-   * @param bool $persistent флаг постоянно подключения
-   */
-  public function __construct($host = 'localhost', $port = 11211, $persistent = false) {
-    $this->host       = $host;
-    $this->port       = $port;
-    $this->persistent = $persistent;
-  }
-
-  /**
-   * Функция для получения едиснтвенного соединения по переданным параметрам
-   *
-   * @see self::__construct()
-   *
-   * @static
-   * @access public
-   * @param string $host хост подключения
-   * @param int $port порт подключения
-   * @param bool $is_persistent флаг постоянно подключения
-   * @return Cache
-   *
-   * <code>
-   * // Коннект будет установлен при первом запросе query|execute
-   * $Db = Database::getConnection('localhost', 'database');
-   * // Только тут начинается коннект
-   * $Db->execute(...);
-   * </code>
-   */
-  public static function getConnection($host = 'localhost', $port = 11211, $persistent = false) {
-    $Instance = &self::$instances[$host . ':' . $port];
-    if (!$Instance) {
-      $Instance = new self($host, $port, $persistent);
-    }
-    return $Instance;
-  }
+  final protected function __construct() {}
 
   /**
    * Подключение к серверну мемкэша
+   * @return Memcached
    */
-  public function connect( ) {
-    $func = $this->persistent
-      ? 'pconnect'
-      : 'connect';
-
-    $this->Memcache = new Memcached;
-    $this->Memcache->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
-    //$this->Memcache->setOption(Memcached::OPT_SERIALIZER, Memcached::SERIALIZER_JSON);
-    $this->Memcache->setOption(Memcached::OPT_COMPRESSION, true);
-    $this->Memcache->setOption(Memcached::OPT_CONNECT_TIMEOUT, 50);
-    $this->Memcache->setOption(Memcached::OPT_RETRY_TIMEOUT, 50);
-    $this->Memcache->setOption(Memcached::OPT_SEND_TIMEOUT, 50);
-    $this->Memcache->setOption(Memcached::OPT_RECV_TIMEOUT, 50);
-    $this->Memcache->setOption(Memcached::OPT_POLL_TIMEOUT, 50);
-    if (!$this->Memcache->addServer($this->host, $this->port)) {
-      App::error('Ошибка при попытке подключения к серверу кэша в оперативной памяти.');
+  protected static function connect() {
+    static $Con;
+    if (!$Con) {
+      $Con = new Memcached;
+      $Con->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
+      Memcached::HAVE_JSON && $Con->setOption(Memcached::OPT_SERIALIZER, Memcached::SERIALIZER_JSON);
+      $Con->setOption(Memcached::OPT_COMPRESSION, true);
+      $Con->setOption(Memcached::OPT_CONNECT_TIMEOUT, 50);
+      $Con->setOption(Memcached::OPT_RETRY_TIMEOUT, 50);
+      $Con->setOption(Memcached::OPT_SEND_TIMEOUT, 50);
+      $Con->setOption(Memcached::OPT_RECV_TIMEOUT, 50);
+      $Con->setOption(Memcached::OPT_POLL_TIMEOUT, 50);
+      if (!$Con->addServer(config('memcache.host'), config('memcache.port'))) {
+        App::error('Ошибка при попытке подключения к серверу кэша в оперативной памяти.');
+      }
     }
-    $this->is_connected = true;
+
+    return $Con;
   }
 
   /**
    * Получение данных из кэша по ключу
    *
    * @param mixed $key
+   * @param mixed $default Closure | mixed если это замыкание, то кэш записвыается
    * @return mixed кэшированное данное
    */
-  public function get($key) {
-    $items = $this->doCommand(is_string($key) ? 'get' : 'getMulti', [$key]);
+  public static function get($key, $default = null) {
+    $items = static::doCommand(is_string($key) ? 'get' : 'getMulti', [$key]);
 
     // Если массив, то нужно выполнить преобразования для возвращаемых данных
     if (is_array($key)) {
@@ -117,16 +63,21 @@ class Cache {
         $items = &$result;
       }
     }
-
-    return $items;
+    if (is_callable($default)) {
+      $default = $default();
+      if (is_string($key)) {
+        static::set($key, $default);
+      }
+    }
+    return $items ?: $default;
   }
 
-  public function getCas($key) {
-    return $this->doCommand('getCas', [$key]);
+  public static function getCas($key) {
+    return static::doCommand('getCas', [$key]);
   }
 
-  public function setWithCas($key, $val, $token) {
-    return $this->doCommand('setWithCas', [$key, $val, $token]);
+  public static function setWithCas($key, $val, $token) {
+    return static::doCommand('setWithCas', [$key, $val, $token]);
   }
 
   /**
@@ -137,7 +88,7 @@ class Cache {
    * @param int $ttl
    * @return mixed Булевый тип или же массив с булевыми значениями для всех ключей
    */
-  public function set($key, $val, $ttl = 0) {
+  public static function set($key, $val, $ttl = 0) {
     assert("is_string(\$key) || is_array(\$key)");
     assert("is_int(\$ttl)");
 
@@ -148,17 +99,13 @@ class Cache {
       $ttl = $args[1];
       $ret = [];
       foreach ($args as $key => $val) {
-        $ret[] = $this->doCommand('setMulti', [
+        $ret[] = static::doCommand('setMulti', [
           $key,
           $val // Выступает в качестве $ttl
         ]);
       }
     } else {
-      $ret = $this->doCommand('set', [
-        $key,
-        $val,
-        $ttl
-      ]);
+      $ret = static::doCommand('set', [$key, $val, $ttl]);
     }
     return $ret;
   }
@@ -171,12 +118,8 @@ class Cache {
    *  @param int $ttl время жизни кэшируемого объекта
    * @return bool
    */
-  public function add($key, $val, $ttl = 0) {
-    return $this->doCommand('add', [
-      $key,
-      $val,
-      $ttl
-    ]);
+  public static function add($key, $val, $ttl = 0) {
+    return static::doCommand('add', [$key, $val, $ttl]);
   }
 
   /**
@@ -186,9 +129,8 @@ class Cache {
   * @param string $val
   * @return bool
   */
-  function append($key, $val) {
-    //return $this->Memcache->append($key, $val);
-    return $this->doCommand('append', [$key, $val]);
+  public static function append($key, $val) {
+    return static::doCommand('append', [$key, $val]);
   }
 
   /**
@@ -198,8 +140,8 @@ class Cache {
    * @param string $val
    * @return bool
    */
-  function prepend($key, $val) {
-    return $this->doCommand('prepend', [$key, $val]);
+  public static function prepend($key, $val) {
+    return static::doCommand('prepend', [$key, $val]);
   }
 
   /**
@@ -208,8 +150,8 @@ class Cache {
    * @param string $key
    * @return bool
    */
-  public function delete($key) {
-    return $this->doCommand('delete', [$key]);
+  public static function delete($key) {
+    return static::remove($key);
   }
 
   /**
@@ -217,8 +159,8 @@ class Cache {
    *
    * @see self::delete()
    */
-  public function remove($key) {
-    return $this->delete($key);
+  public static function remove($key) {
+    return static::doCommand('delete', [$key]);
   }
 
   /**
@@ -229,9 +171,9 @@ class Cache {
    * @param int $count количество, на которое необходимо увеличить счетчик
    * @return mixed Новое значение с учетом увеличения или FALSE
    */
-  public function increment($key, $count = 1) {
-    if (false === $result = $this->doCommand('increment', [$key, $count])) {
-      $this->set($key, $count);
+  public static function increment($key, $count = 1) {
+    if (false === $result = static::doCommand('increment', [$key, $count])) {
+      static::set($key, $count);
       return $count;
     }
     return $result;
@@ -242,8 +184,8 @@ class Cache {
    *
    * @see self::increment()
    */
-  public function decrement($key, $count = 1) {
-    return $this->increment($key, -$count);
+  public static function decrement($key, $count = 1) {
+    return static::increment($key, -$count);
   }
 
   /**
@@ -253,31 +195,15 @@ class Cache {
    * @param array $data
    * @return mixed
    */
-  private function doCommand($command, array $data = []) {
-    // Установлен ли коннект
-    if (!$this->is_connected)
-      $this->connect( );
-
-    return call_user_func_array([$this->Memcache, $command], $data);
+  protected static function doCommand($command, array $data = []) {
+    return call_user_func_array([static::connect(), $command], $data);
   }
 
   /**
    * Очистка всего пула кэша
    * @return bool
    */
-  public function flush( ) {
-    return $this->doCommand('flush');
-  }
-
-  /**
-   * Закрытие соединение с кэширующим механизмом
-   *
-   * @return void
-   */
-  public function __destruct( ) {
-    if ($this->is_connected) {
-      $this->is_connected = false;
-      unset($this->Memcache);
-    }
+  public static function flush() {
+    return static::doCommand('flush');
   }
 }
