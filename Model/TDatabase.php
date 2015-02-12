@@ -8,38 +8,10 @@ trait TDatabase {
    * @property string $table статическая переменная с таблицей
    * @property array $fields Все поля для данной таблицы
    */
-  protected
+  protected static
     $shard_id     = 0,
     $table        = '',
     $fields       = [];
-
-  /**
-   * Инициализация и подключение к серверу базы данных
-   *
-   * @uses Database
-   * @uses Config
-   */
-  final public function initDatabase( ) {
-    // Если не установлена таблица
-    if (!$this->table)
-      $this->table = strtolower(str_replace(chr(92), '_', static::class));
-
-    // Инициализация таблицы
-    if ($this->table[0] !== '`')
-      $this->table = '`' . $this->table . '`';
-
-    // Если не установлены поля
-    if (!$this->fields)
-      $this->fields = $this->dbGetFields();
-
-    // Кэш ключ для значения по ид self::getByIds()
-    $this->cache_keys['item']   = static::class . ':%d';
-
-    // Кэш ключ для self::getCustomCache()
-    $this->cache_keys['custom'] = static::class . ':%s';
-
-    return $this;
-  }
 
   /**
    * Получение строки для sql-строки с параметрами, поддерживает как
@@ -62,6 +34,31 @@ trait TDatabase {
     }
 
     return implode(' ' . $sep . ' ', $data);
+  }
+
+  public static function table() {
+    if (!static::$table) {
+      static::$table = strtolower(str_replace(chr(92), '_', static::class));
+
+      // Инициализация таблицы
+      if (static::table()[0] !== '`')
+        static::$table = '`' . static::table() . '`';
+    }
+    return static::$table;
+  }
+
+  public static function fields() {
+    static $fields = [];
+    if (!$fields) {
+      $fields = static::create()->getCacheable('db:scheme:' . static::table(), function () {
+        $fields = [];
+        if ($data = static::dbQuery('DESCRIBE ' . static::table())) {
+          $fields = array_column($data, 'Field');
+        }
+        return $fields;
+      });
+    }
+    return $fields;
   }
 
   /**
@@ -88,23 +85,6 @@ trait TDatabase {
   }
 
   /**
-   * Получение полей с их типами из базы данных
-   *
-   * @access protected
-   * @return array
-   * @throws Exception
-   */
-  protected function dbGetFields( ) {
-    return $this->getCacheable('db:scheme:' . $this->table, function () {
-      $fields = [];
-      if ($data = static::dbQuery('DESCRIBE ' . $this->table)) {
-        $fields = array_column($data, 'Field');
-      }
-      return $fields;
-    });
-  }
-
-  /**
    * Выполнение запроса вставки в базу данных
    *
    * @uses self::dbGetSqlStringByParams()
@@ -115,7 +95,7 @@ trait TDatabase {
    * @return bool
    */
   protected function dbInsert(array $params) {
-    $q = 'INSERT INTO ' . $this->table
+    $q = 'INSERT INTO ' . static::table()
       . ' SET ' . self::dbGetSqlStringByParams($params, ',');
     return static::dbQuery($q, $params);
   }
@@ -188,7 +168,7 @@ trait TDatabase {
     }
     */
     $q = 'SELECT ' . self::dbGetSqlStringByParams($fields)
-      . ' FROM ' . $this->table
+      . ' FROM ' . static::table()
       . ($where ? ' WHERE ' . implode(' AND ', $where) : '')
       . ($order_string ? ' ORDER BY ' . $order_string : '')
       . ($limit ? ' LIMIT ' . (int) $offset . ', ' . (int) $limit : '');
@@ -205,7 +185,7 @@ trait TDatabase {
    */
   protected function dbCount(array $conditions = []) {
     $where = $conditions ? $this->dbGetWhere($conditions) : null;
-    $q = 'SELECT COUNT(*) AS `count` FROM ' . $this->table
+    $q = 'SELECT COUNT(*) AS `count` FROM ' . static::table()
       . ($where ? ' WHERE ' . implode('AND', $where) : '')
       . ' LIMIT 1';
     $rows = static::dbQuery($q, $conditions);
@@ -238,7 +218,7 @@ trait TDatabase {
    * @return Database::execute()
    */
   protected function dbUpdate(array $params, array $conditions, $incremental = false) {
-    $q = 'UPDATE ' . $this->table
+    $q = 'UPDATE ' . static::table()
       . ' SET ' . self::dbGetSqlStringByParams($params, ',', $incremental)
       . ' WHERE ' . self::dbGetSqlStringByParams($conditions, ' AND ');
     return static::dbQuery($q, array_merge($params, $conditions));
@@ -258,7 +238,7 @@ trait TDatabase {
     foreach ($ids as $id) {
       $id_params[] = sprintf('ID%d', ++$i);
     }
-    $q = 'UPDATE ' . $this->table
+    $q = 'UPDATE ' . static::table()
       . ' SET ' . self::dbGetSqlStringByParams($params, ',', $incremental)
       . ' WHERE `id` IN (:' . implode(', :', $id_params) . ')';
 
@@ -275,7 +255,7 @@ trait TDatabase {
    * @return Database::execute()
    */
   protected function dbDelete(array $conditions) {
-    $q = 'DELETE FROM ' . $this->table
+    $q = 'DELETE FROM ' . static::table()
       . ' WHERE ' . self::dbGetSqlStringByParams($conditions, ' AND ');
     return static::dbQuery($q, $conditions);
   }
@@ -296,7 +276,7 @@ trait TDatabase {
    * @return Database::execute()
    */
   protected function dbDeleteByRowValues($row, array $values) {
-    $q = 'DELETE FROM ' . $this->table
+    $q = 'DELETE FROM ' . static::table()
       . ' WHERE `' . $row . '` IN (' . trim(str_repeat('?,', sizeof($values)), ',') . ')';
     return static::dbQuery($q, $values);
   }
@@ -348,7 +328,7 @@ trait TDatabase {
     assert('sizeof($values) > 0');
 
     $q = 'SELECT ' . self::dbGetSqlStringByParams($fields)
-      . ' FROM ' . $this->table
+      . ' FROM ' . static::table()
       . ' WHERE `' . $row . '` IN (' . trim(str_repeat('?, ', sizeof($values)), ', ') . ')';
       ;
     return ($data = self::dbQuery($q, $values))
@@ -375,7 +355,7 @@ trait TDatabase {
    * @return int
    */
   protected function dbToggleField($field, $id, $prev_value = null) {
-    $q = 'UPDATE ' . $this->table
+    $q = 'UPDATE ' . static::table()
       . ' SET `' . $field . '` = IF (`' . $field . '` = 1, 0, 1)'
       . ' WHERE `id` = :id'
       . (isset($prev_value) ? ' AND `' . $field . '` = :prev_value' : '');
@@ -391,7 +371,7 @@ trait TDatabase {
   protected function dbGetPaginated($query, array $params = []) {
     assert('is_string($query)');
     $total = $this->Pagination ? $this->Pagination->getTotal() : 0;
-    $query = 'SELECT %s FROM ' . $this->table . ' ' . $query . ' LIMIT %d, %d';
+    $query = 'SELECT %s FROM ' . static::table() . ' ' . $query . ' LIMIT %d, %d';
 
     if (!$total) {
       $row = self::dbQuery(sprintf($query, ...['COUNT(*) AS `count`', 0, 1]), $params);

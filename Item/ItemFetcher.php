@@ -110,7 +110,7 @@ class ItemFetcher extends ItemManager {
    */
   public function dispatch() {
     if (!$this->data) { // Если данных не было передано, подгружаем
-      $Obj = new $this->model;
+      $Obj = forward_static_call([$this->model, 'create']);
       if ($this->Pagination) {
         $Obj->setPagination($this->Pagination);
       }
@@ -140,7 +140,7 @@ class ItemFetcher extends ItemManager {
         $sk = $Fetcher->src_key;
         $rk = $Fetcher->root_key ? explode('.', $Fetcher->root_key) : [];
 
-        $Obj = new $Fetcher->model;
+        $Obj = forward_static_call([$Fetcher->model, 'create']);
 
         // Возвращаемые данные списков могут быть просто данными
         // или же специальными постраничными списками, тогда данные находятся

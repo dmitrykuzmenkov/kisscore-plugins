@@ -56,27 +56,10 @@ abstract class Model implements ArrayAccess {
   // Offsets
   protected $Pagination = null;
 
-  /**
-   * Инициализация и подключение к серверу базы данных
-   *
-   * @uses Database
-   * @uses Config
-   */
-  final public function __construct() {
-    $this
-      ->initDatabase()
-      ->init();
-  }
+  final protected function __construct() {}
 
   public function setPagination(Pagination $Pagination) {
     $this->Pagination = $Pagination;
-    return $this;
-  }
-
-  /**
-   * @return $this
-   */
-  protected function init() {
     return $this;
   }
 
@@ -140,7 +123,7 @@ abstract class Model implements ArrayAccess {
 
   public static function incrementAll(array $counters) {
     return static::dbQuery(
-      'UPDATE ' . static::create()->table . ' SET ' . self::dbGetSqlStringByParams($counters, ',', true),
+      'UPDATE ' . static::table() . ' SET ' . self::dbGetSqlStringByParams($counters, ',', true),
       $counters
     );
   }
@@ -153,7 +136,7 @@ abstract class Model implements ArrayAccess {
    */
   public function save(array $data) {
     // Не пропускаем к базе возможно установленные левые ключи
-    $data = array_intersect_key($data, array_flip($this->fields));
+    $data = array_intersect_key($data, array_flip(static::fields()));
     $this->data = array_merge($this->data, $data);
 
     // Ничего на обновление нет?
@@ -191,7 +174,7 @@ abstract class Model implements ArrayAccess {
       $saved = $this->dbInsert($data);
 
       // Дополняем нулл значениями
-      $this->data = array_merge(array_fill_keys($this->fields, null), $data);
+      $this->data = array_merge(array_fill_keys(static::fields(), null), $data);
     }
 
     if ($saved) {
@@ -320,7 +303,7 @@ abstract class Model implements ArrayAccess {
       // Подгружаем только не найденные данные,
       // попутно сортируя в порядке ID
       $result = [];
-      $diff   = $missed ? $Obj->dbGetByIds($Obj->fields, $missed) : [];
+      $diff   = $missed ? $Obj->dbGetByIds(static::fields(), $missed) : [];
 
       foreach ($ids as $id) {
         if (isset($diff[$id]))
