@@ -38,6 +38,17 @@ class Cache {
   }
 
   /**
+   * Выполнение комманды к серверу
+   *
+   * @param string $command
+   * @param array $data
+   * @return mixed
+   */
+  protected static function doCommand($command, array $data = []) {
+    return call_user_func_array([static::connect(), $command], $data);
+  }
+
+  /**
    * Получение данных из кэша по ключу
    *
    * @param mixed $key
@@ -186,17 +197,6 @@ class Cache {
    */
   public static function decrement($key, $count = 1) {
     return static::increment($key, -$count);
-  }
-
-  /**
-   * Выполнение комманды к серверу
-   *
-   * @param string $command
-   * @param array $data
-   * @return mixed
-   */
-  protected static function doCommand($command, array $data = []) {
-    return call_user_func_array([static::connect(), $command], $data);
   }
 
   /**

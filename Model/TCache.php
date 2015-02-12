@@ -67,24 +67,9 @@ trait TCache {
     // Кэш включен, проверяем
     $key = $this->getCacheKey('custom', $id);
     if (false === $data = Cache::get($key))
-      $this->cacheSet($key, $data = $fetcher());
+      Cache::set($key, $data = $fetcher());
 
     return $data;
-  }
-
-
-  protected function cacheSet($key, $value) {
-    Cache::set($key, $value);
-    return $this;
-  }
-
-  protected function cacheDelete($key) {
-    Cache::delete($key);
-    return $this;
-  }
-
-  protected function cacheGet($key) {
-    return Cache::get($key);
   }
 
   /**
