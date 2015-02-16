@@ -13,7 +13,7 @@ port=$mysql_port
 user='$mysql_user'
 db='$mysql_db'
 password='$mysql_password'
-data_dir='$VAR_DIR/mariadb'
+data_dir='%VAR_DIR%/mariadb'
 innodb_buffer_pool_size = '64M'
 innodb_buffer_pool_instances = 1
 shard[0] = 'mysql:host=$mysql_ip;port=$mysql_port;dbname=$mysql_db;user=$mysql_user;password=$mysql_password'
