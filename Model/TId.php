@@ -28,7 +28,7 @@ trait TId {
    * @return $this
    */
   public function getByAlphaId($id) {
-    return $this->get(static::decodeId($id));
+    return static::get(static::decodeId($id));
   }
 
   /**
@@ -57,7 +57,7 @@ trait TId {
    * @return int
    */
   protected static function decodeId($id) {
-    return AlphaID::decoe($id, config('common.alphabet'));
+    return AlphaID::decode($id, config('common.alphabet'));
   }
 
   /**
