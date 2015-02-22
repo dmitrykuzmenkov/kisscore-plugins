@@ -8,7 +8,8 @@ mysql_config=$CONFIG_DIR'/mariadb.cnf'
 
 app_config mysql "
 connect_timeout=1
-host='p:$mysql_ip'
+host='p:$mysql_ip' ; used for connect
+ip='$mysql_ip' ; used for bind
 port=$mysql_port
 user='$mysql_user'
 db='$mysql_db'
