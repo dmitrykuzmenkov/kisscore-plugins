@@ -1,10 +1,13 @@
 #!/bin/bash
-ip='127.0.0.1'
-port=$(allocate_port cache)
-
 app_config memcache "
-host = '$ip'
-port = $port
-size = 128 ;megabytes
-persistent = 0
+host = 127.0.0.1
+port = 11211
+persistent = 1
+compression = true
+binary_protocol = true
+connect_timeout = 50
+retry_timeout = 50
+send_timeout = 50
+recv_timeout = 50
+poll_timeout = 50
 "

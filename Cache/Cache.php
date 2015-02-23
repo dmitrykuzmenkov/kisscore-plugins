@@ -21,14 +21,14 @@ class Cache {
     static $Con;
     if (!$Con) {
       $Con = new Memcached;
-      $Con->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
+      $Con->setOption(Memcached::OPT_BINARY_PROTOCOL, config('memcache.binary_protocol'));
       Memcached::HAVE_JSON && $Con->setOption(Memcached::OPT_SERIALIZER, Memcached::SERIALIZER_JSON);
-      $Con->setOption(Memcached::OPT_COMPRESSION, true);
-      $Con->setOption(Memcached::OPT_CONNECT_TIMEOUT, 50);
-      $Con->setOption(Memcached::OPT_RETRY_TIMEOUT, 50);
-      $Con->setOption(Memcached::OPT_SEND_TIMEOUT, 50);
-      $Con->setOption(Memcached::OPT_RECV_TIMEOUT, 50);
-      $Con->setOption(Memcached::OPT_POLL_TIMEOUT, 50);
+      $Con->setOption(Memcached::OPT_COMPRESSION, config('memcache.compression'));
+      $Con->setOption(Memcached::OPT_CONNECT_TIMEOUT, config('memcache.connect_timeout'));
+      $Con->setOption(Memcached::OPT_RETRY_TIMEOUT, config('memcache.retry_timeout'));
+      $Con->setOption(Memcached::OPT_SEND_TIMEOUT, config('memcache.send_timeout'));
+      $Con->setOption(Memcached::OPT_RECV_TIMEOUT, config('memcache.recv_timeout'));
+      $Con->setOption(Memcached::OPT_POLL_TIMEOUT, config('memcache.poll_timeout'));
       if (!$Con->addServer(config('memcache.host'), config('memcache.port'))) {
         App::error('Ошибка при попытке подключения к серверу кэша в оперативной памяти.');
       }
