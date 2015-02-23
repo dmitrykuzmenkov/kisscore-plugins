@@ -269,6 +269,20 @@ abstract class Model implements ArrayAccess {
   }
 
   /**
+   * Fail on emty object after fetching
+   */
+  public function orFail() {
+    if (!$this->getId()) {
+      $class = static::class . 'NotFoundException';
+      if (!class_exists($class)) {
+        $class = ModelNotFoundException::class;
+      }
+      throw new $class;
+    }
+    return $this;
+  }
+
+  /**
    * Получение нескольких записей по ID
    *
    * @param array $ids
