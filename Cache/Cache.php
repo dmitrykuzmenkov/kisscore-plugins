@@ -22,7 +22,6 @@ class Cache {
     if (!$Con) {
       $Con = new Memcached;
       $Con->setOption(Memcached::OPT_BINARY_PROTOCOL, config('memcache.binary_protocol'));
-      Memcached::HAVE_JSON && $Con->setOption(Memcached::OPT_SERIALIZER, Memcached::SERIALIZER_JSON);
       $Con->setOption(Memcached::OPT_COMPRESSION, config('memcache.compression'));
       $Con->setOption(Memcached::OPT_CONNECT_TIMEOUT, config('memcache.connect_timeout'));
       $Con->setOption(Memcached::OPT_RETRY_TIMEOUT, config('memcache.retry_timeout'));
