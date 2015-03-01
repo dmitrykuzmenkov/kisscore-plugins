@@ -404,8 +404,4 @@ abstract class Model implements ArrayAccess {
     }
     return $this;
   }
-
-  protected function getCacheable($key, Closure $func) {
-    return $this->is_cacheable ? Cache::get($key, $func) : $func();
-  }
 }

@@ -50,13 +50,14 @@ trait TDatabase {
   public static function fields() {
     static $fields = [];
     if (!$fields) {
-      $fields = static::create()->getCacheable('db:scheme:' . static::table(), function () {
+      $func = function () {
         $fields = [];
         if ($data = static::dbQuery('DESCRIBE ' . static::table())) {
           $fields = array_column($data, 'Field');
         }
         return $fields;
-      });
+      };
+      $fields = App::$debug ? $func() : Cache::get('db:scheme:' . static::table(), $func);
     }
     return $fields;
   }
