@@ -91,19 +91,10 @@ class Cache {
     assert("is_string(\$key) || is_array(\$key)");
     assert("is_int(\$ttl)");
 
-    $ret = false;
-    // Если нужно выполнить multiset
-    if (is_array($key)) {
-      $args = func_get_args();
-      $ttl = $args[1];
-      $ret = [];
-      foreach ($args as $key => $val) {
-        $ret[] = static::connect()->setMulti($key, $val); // $val as $ttl
-      }
-    } else {
-      $ret = static::connect()->set($key, $val, $ttl);
-    }
-    return $ret;
+    return is_string($key) 
+      ? static::connect()->set($key, $val, $ttl)
+      : static::connect()->setMulti($key, $val) // $val as $ttl
+    ;
   }
 
   /**
@@ -141,22 +132,14 @@ class Cache {
   }
 
   /**
-   * Удаление данного по ключу из кэша
-   *
-   * @param string $key
-   * @return bool
-   */
-  public static function delete($key) {
-    return static::remove($key);
-  }
-
-  /**
-   * Алиас для функции удаления
-   *
-   * @see self::delete()
+   * @param string|array $key
    */
   public static function remove($key) {
-    return static::connect()->delete($key);
+    return is_string($key) ? static::connect()->delete($key) : static::connect()->deleteMulti($key);
+  }
+
+  public static function delete($key) {
+    return static::remove($key);
   }
 
   /**
