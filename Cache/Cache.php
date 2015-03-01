@@ -62,7 +62,7 @@ class Cache {
         $items = &$result;
       }
     }
-    if (is_callable($default)) {
+    if (false === $items && is_callable($default)) {
       $default = $default();
       if (is_string($key)) {
         static::set($key, $default);
