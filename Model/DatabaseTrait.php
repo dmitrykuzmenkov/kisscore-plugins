@@ -5,7 +5,7 @@ use App;
 /**
  * Трейт реализует доступ к SQL-базе данных через функцию обертку db() (Mysql)
  */
-trait TDatabase {
+trait DatabaseTrait {
   /**
    * @property int $shard_id Текущий идентификатор шарда, использующийся для коннекта
    * @property string $table статическая переменная с таблицей

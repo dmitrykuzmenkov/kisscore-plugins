@@ -1,6 +1,6 @@
 <?php
 namespace Plugin\Model;
-trait TArray {
+trait ArrayTrait {
   public function offsetSet($k, $v) {
     $this->data[$k] = $v;
   }

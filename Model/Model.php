@@ -28,7 +28,7 @@ use Closure;
  * </code>
  */
 abstract class Model implements ArrayAccess {
-  use TDatabase, TId, TArray;
+  use DatabaseTrait, IdTrait, ArrayTrait;
 
   /**
    * @property bool $is_new

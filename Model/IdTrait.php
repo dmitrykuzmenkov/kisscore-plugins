@@ -3,7 +3,7 @@ namespace Plugin\Model;
 /**
  * Трейт для генерации и работы с разными видами идентификаторов
  */
-trait TId {
+trait IdTrait {
 
   /**
    * Генерация ид с жизнью до 35 лет для signed и 70 unsigned
