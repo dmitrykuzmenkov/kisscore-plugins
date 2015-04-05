@@ -1,4 +1,6 @@
 <?php
+namespace Plugin\Cache;
+use Memcached;
 /**
 * Класс реализации методов для кэширования объектов в памяти
 * Представляет из себя wrapper класса Memcached

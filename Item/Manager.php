@@ -1,4 +1,5 @@
 <?php
+namespace Plugin\Item;
 /**
  * Абстрактный класс с базовыми возможностями для объекта управления элементами
  *
@@ -6,7 +7,7 @@
  * @package Core
  * @subpackage ItemManager
  */
-abstract class ItemManager {
+abstract class Manager {
   /**
     * @property string $model
     * @property string $method

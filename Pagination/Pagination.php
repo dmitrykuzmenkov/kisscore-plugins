@@ -1,4 +1,6 @@
 <?php
+namespace Plugin\Pagination;
+use Input;
 /**
  * Класс для работы с системой постраничной навигации
  *

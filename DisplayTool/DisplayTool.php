@@ -1,4 +1,5 @@
 <?php
+namespace Plugin\DisplayTool;
 class DisplayTool {
   /**
    * Получение человеко-читаемой даты согласно текущей локали

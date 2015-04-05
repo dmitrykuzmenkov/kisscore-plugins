@@ -1,4 +1,5 @@
 <?php
+namespace Plugin\Item;
 /**
  * @final
  * @package Core
@@ -50,7 +51,7 @@ class Item {
    */
   public static function fetcher($mapper, $args, &$result, array $batch = []) {
     $result = [];
-    return ItemFetcher::create($mapper, 'id', is_array($args) ? $args : [$args], $result, $batch);
+    return Fetcher::create($mapper, 'id', is_array($args) ? $args : [$args], $result, $batch);
   }
 
   /**
@@ -62,6 +63,6 @@ class Item {
    * @return ItemFetcher::create()
    */
   public static function fetch($mapper, $src_key = null, $root_key = null) {
-    return ItemFetcher::create($mapper, $src_key ? $src_key : strtolower($mapper) . '_id')->setRootKey($root_key);
+    return Fetcher::create($mapper, $src_key ? $src_key : strtolower($mapper) . '_id')->setRootKey($root_key);
   }
 }

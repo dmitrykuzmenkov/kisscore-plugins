@@ -1,22 +1,24 @@
 <?php
+namespace Plugin\Item;
+use Plugin\Pagination\Pagination;
+
 /**
  * Загрузчик сущностей, доступ через объект Entity
  *
  * @final
  * @package Core
- * @subpackage ItemFetcher
+ * @subpackage Fetcher
  */
-class ItemFetcher extends ItemManager {
+class Fetcher extends Manager {
   /**
    * @property string $src_key
    * @property string $root_key
    *   Корневой ключ, откуда идет выборка $src_key (должен представлять собой массив)
    * @property string $dst_key
    */
-  protected
-  $src_key  = '',
-  $root_key = '',
-  $dst_key  = '';
+  protected $src_key  = '';
+  protected $root_key = '';
+  protected $dst_key  = '';
 
   protected $Pagination = null;
 
@@ -35,7 +37,7 @@ class ItemFetcher extends ItemManager {
    *   Массив с результатами (если была уже агрегированная выборка)
    * @param array $batch
    *   Массив оппераций, которые будут выполнены в параллели
-   * @return ItemFetcher
+   * @return Fetcher
    */
   public static function create($mapper, $src_key, array $args = null, array &$data = [], array $batch = []) {
     $Self = new self;
@@ -46,7 +48,7 @@ class ItemFetcher extends ItemManager {
       $method = 'get';
     }
 
-    $Self->model  = $model;
+    $Self->model  = config('item.model_namespace') . '\\' . $model;
     $Self->method = $method;
 
     $Self->src_key    = $src_key;

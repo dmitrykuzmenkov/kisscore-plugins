@@ -1,4 +1,5 @@
 <?php
+namespace Plugin\AlphaID;
 class AlphaID {
   const ALPHA_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   /**

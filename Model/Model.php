@@ -1,5 +1,9 @@
 <?php
-
+namespace Plugin\Model;
+use Plugin\Cache\Cache;
+use Plugin\Pagination\Pagination;
+use ArrayAccess;
+use Closure;
 /**
  * Абстрактный класс реализации модели
  *

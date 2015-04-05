@@ -1,0 +1,4 @@
+#!/bin/bash
+app_config item "
+model_namespace = 'App'
+"

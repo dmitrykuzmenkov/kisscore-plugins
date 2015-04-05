@@ -1,4 +1,6 @@
 <?php
+namespace Plugin\Async;
+use Closure;
 // Still buggy. Use only for simple calls without dependencies on core
 class Async extends Thread {
   protected $closure;

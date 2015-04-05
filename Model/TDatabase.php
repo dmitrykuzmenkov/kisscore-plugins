@@ -1,4 +1,7 @@
 <?php
+namespace Plugin\Model;
+use Plugin\DB\DB;
+use App;
 /**
  * Трейт реализует доступ к SQL-базе данных через функцию обертку db() (Mysql)
  */
