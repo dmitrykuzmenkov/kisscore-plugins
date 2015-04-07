@@ -41,7 +41,8 @@ trait DatabaseTrait {
 
   public static function table() {
     if (!static::$table) {
-      static::$table = strtolower(str_replace(chr(92), '_', static::class));
+      $parts = explode('\\', static::class);
+      static::$table = strtolower(str_replace(chr(92), '_', end($parts)));
 
       // Инициализация таблицы
       if (static::table()[0] !== '`')
