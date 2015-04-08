@@ -329,7 +329,7 @@ abstract class Model implements ArrayAccess {
    * @return $this
    */
   public function load($id) {
-    if ($rows = $this->getByIds([$id])) {
+    if ($rows = static::getByIds([$id])) {
       $this->is_new = false;
       $this->id = (string) $id;
       $row = array_shift($rows);
