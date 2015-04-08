@@ -64,10 +64,13 @@ class Cache {
         $items = &$result;
       }
     }
-    if (false === $items && is_string($key) && is_callable($default)) {
-      static::set($key, $default());
+    if (false === $items) {
+      $items = $default;
+      if (is_string($key) && is_callable($default)) {
+        static::set($key, $items = $default());
+      }
     }
-    return $items ?: (is_callable($default) ? $default() : $default);
+    return $items;
   }
 
   public static function getCas($key) {
