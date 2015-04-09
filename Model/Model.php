@@ -382,7 +382,8 @@ abstract class Model implements ArrayAccess {
   }
 
   protected function addError($error) {
-    $this->errors['e_' . strtolower(static::class) . '_' . $error] = true;
+    $parts = explode('\\', static::class);
+    $this->errors['e_' . strtolower(end($parts)) . '_' . $error] = true;
     return $this;
   }
 
