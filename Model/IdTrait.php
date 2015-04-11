@@ -1,5 +1,7 @@
 <?php
 namespace Plugin\Model;
+use Plugin\AlphaID\AlphaID;
+
 /**
  * Трейт для генерации и работы с разными видами идентификаторов
  */
@@ -28,7 +30,7 @@ trait IdTrait {
    * @param int $id
    * @return $this
    */
-  public function getByAlphaId($id) {
+  public static function getByAlphaId($id) {
     return static::get(static::decodeId($id));
   }
 
