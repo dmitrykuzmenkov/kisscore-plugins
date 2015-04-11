@@ -30,7 +30,7 @@ class Cache {
       $Con->setOption(Memcached::OPT_SEND_TIMEOUT, config('memcache.send_timeout'));
       $Con->setOption(Memcached::OPT_RECV_TIMEOUT, config('memcache.recv_timeout'));
       $Con->setOption(Memcached::OPT_POLL_TIMEOUT, config('memcache.poll_timeout'));
-      $Con->setOption(Memcached::OPT_PREFIX_KEY, getenv('PROJECT') . ':');
+      $Con->setOption(Memcached::OPT_PREFIX_KEY, config('memcache.key_prefix'));
 
       if (!$Con->addServer(config('memcache.host'), config('memcache.port'))) {
         App::error('Ошибка при попытке подключения к серверу кэша в оперативной памяти.');

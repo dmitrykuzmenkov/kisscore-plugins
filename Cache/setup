@@ -10,4 +10,5 @@ retry_timeout = 50
 send_timeout = 50
 recv_timeout = 50
 poll_timeout = 50
+key_prefix = '%PROJECT%:'
 "
