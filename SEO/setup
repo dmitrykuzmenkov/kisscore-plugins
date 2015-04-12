@@ -1,3 +1,0 @@
-#!/bin/bash
-/bin/ln -s $CONFIG_DIR/robots.txt $HTML_DIR/robots.txt
-/bin/ln -s $CONFIG_DIR/sitemap.xml $HTML_DIR/sitemap.xml
