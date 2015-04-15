@@ -1,0 +1,4 @@
+#!/bin/bash
+declare -A checks
+checks['mbstring']='php -m | grep mbstring$'
+run_checks
