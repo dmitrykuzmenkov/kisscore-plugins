@@ -12,15 +12,13 @@ class Pagination {
   /**
    * @property int $limit Количество элементов на страницу
    * @property int $total Количество всех элементов в списке
-   * @property string $page_name Имя переменной параметра запроса, содержащего страницу
    * @property string $route Роут для формирования урл листания страниц
    * @property string $params Параметры для создания урл
    */
   private
   $limit        = 1000,
   $total        = 0,
-  $page_name    = 'p',
-  $default_page = 1,
+  $page         = -1,
   $route        = '',
   $params       = [];
 
@@ -33,9 +31,9 @@ class Pagination {
    *
    * <code>
    * $list = Pagination::create([
+   *  'page'  => 1,
    *  'limit' => 15,
    *  'total' => 10,
-   *  'page_name' => 'p',
    * ])->listResult($items_from_database);
    * </code>
    */
@@ -70,7 +68,7 @@ class Pagination {
    * @return int
    */
   public function getCurrentPage() {
-    $page = (int) Input::get($this->page_name, $this->default_page);
+    $page = $this->page;
     if ($page < 1) {
       $page = 1;
     }
@@ -125,31 +123,26 @@ class Pagination {
     $last_page  = $this->getLastPage();
 
     $data['has_pages']  = $last_page > 1;
-    $data['param_name'] = $this->page_name;
     $data['current']    = $cur_page;
     $data['last']       = $last_page;
 
     $url = function ($page) {
-      return '/' . Input::get('ROUTE') . '?' . $this->page_name . '=' . $page;
+      return '/' . Input::get('ROUTE') . '?p=' . $page;
     };
 
-    $data['prev_url'] = '';
+    $data['prev_page'] = '';
     if ($cur_page > 1) {
-      //$data['prev_url'] = $url($cur_page - 1);
-
-      $data['prev_url'] = $url($cur_page - 1);
+      $data['prev_page'] = $cur_page - 1;
     }
 
-    $data['next_url'] = '';
+    $data['next_page'] = '';
     if ($cur_page !== $last_page) {
-      //$data['next_url'] = $url($cur_page + 1);
-
-      $data['next_url'] = $url($cur_page + 1);
+      $data['next_page'] = $cur_page + 1;
     }
 
     // @TODO: сформировать страницы
     for ($i = 1; $i <= $last_page; $i++) {
-      $data['pages'][] = ['page' => $i, 'url' => $url($i), 'current' => $i === $cur_page];
+      $data['pages'][] = ['page' => $i, 'current' => $i === $cur_page];
     }
     return $data;
   }
