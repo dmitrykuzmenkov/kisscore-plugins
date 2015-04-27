@@ -1,6 +1,5 @@
 <?php
 namespace Plugin\Pagination;
-use Input;
 /**
  * Класс для работы с системой постраничной навигации
  *
@@ -10,17 +9,14 @@ use Input;
  */
 class Pagination {
   /**
-   * @property int $limit Количество элементов на страницу
-   * @property int $total Количество всех элементов в списке
-   * @property string $route Роут для формирования урл листания страниц
-   * @property string $params Параметры для создания урл
+   * @property int $limit Per page limit
+   * @property int $total All count of items to be paginated
+   * @property int $page Current page
    */
   private
   $limit        = 1000,
   $total        = 0,
-  $page         = -1,
-  $route        = '',
-  $params       = [];
+  $page         = 1;
 
   private static $Instance = null;
 
@@ -42,24 +38,8 @@ class Pagination {
     foreach ($conf as $k => $v) {
       $Obj->$k = $v;
     }
-    if (!$Obj->route) {
-      $Obj->route = Input::get('ROUTE');
-    }
-
-    if (!$Obj->params) {
-      $Obj->params = Input::get();
-    }
 
     return $Obj;
-  }
-
-  /**
-   * Получение установленного роута
-   *
-   * @return string
-   */
-  public function getRoute() {
-    return $this->route;
   }
 
   /**
@@ -115,20 +95,12 @@ class Pagination {
    */
   public function getArray() {
     $data = [];
-    // Если не установлен роут, используем текущий
-    if (!$route = $this->getRoute()) {
-      $route = Input::get('ROUTE');
-    }
     $cur_page   = $this->getCurrentPage();
     $last_page  = $this->getLastPage();
 
     $data['has_pages']  = $last_page > 1;
     $data['current']    = $cur_page;
     $data['last']       = $last_page;
-
-    $url = function ($page) {
-      return '/' . Input::get('ROUTE') . '?p=' . $page;
-    };
 
     $data['prev_page'] = '';
     if ($cur_page > 1) {
