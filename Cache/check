@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 declare -A checks
 checks['memcached']='which memcached'
 checks['php-memcached']='php -m | grep memcached$';

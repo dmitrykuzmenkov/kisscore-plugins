@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 declare -A checks
 checks['mysql']='mysql --version'
 checks['mysqli']='php -m | grep mysqli$'

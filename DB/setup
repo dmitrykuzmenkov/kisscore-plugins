@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 app_config mysql "
 connect_timeout=1
 shard[0] = 'mysql:host=HOST;port=PORT;dbname=DBNAME;user=USER;password=PASSWORD'
