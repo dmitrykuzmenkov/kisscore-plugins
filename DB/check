@@ -2,4 +2,4 @@
 declare -A checks
 checks['mysql']='mysql --version'
 checks['mysqli']='php -m | grep mysqli$'
-run_checks
+run-checks

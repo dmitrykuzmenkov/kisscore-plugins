@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-app_config memcache "
+app-config memcache "
 host = 127.0.0.1
 port = 11211
 persistent = 1

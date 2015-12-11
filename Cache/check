@@ -2,4 +2,4 @@
 declare -A checks
 checks['memcached']='which memcached'
 checks['php-memcached']='php -m | grep memcached$';
-run_checks
+run-checks
