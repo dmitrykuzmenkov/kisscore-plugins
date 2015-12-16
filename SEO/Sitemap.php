@@ -14,9 +14,9 @@ class Sitemap {
       . PHP_EOL . '  <priority>1.0</priority>'
       . PHP_EOL . '  <mobile:mobile/>'
       . PHP_EOL . '</url>'
-      . PHP_EOL . implode('', 
+      . PHP_EOL . implode('',
         array_map(function ($loc) {
-          return 
+          return
             PHP_EOL . '<url>'
             . PHP_EOL . '  <loc>' . $loc['url'] . '</loc>'
             . PHP_EOL . '  <lastmod>' . $loc['date'] . '</lastmod>'

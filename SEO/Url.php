@@ -3,7 +3,7 @@ class Url {
   public static function getSlug($str, $options = array()) {
     // Make sure string is in UTF-8 and strip invalid UTF-8 characters
     $str = mb_convert_encoding((string)$str, 'UTF-8', mb_list_encodings());
-    
+
     $defaults = array(
       'delimiter' => '-',
       'limit' => null,
@@ -11,10 +11,10 @@ class Url {
       'replacements' => array(),
       'transliterate' => false,
     );
-    
+
     // Merge options
     $options = array_merge($defaults, $options);
-    
+
     $char_map = [
       // Russian
       'А' => 'A', 'Б' => 'B', 'В' => 'V', 'Г' => 'G', 'Д' => 'D', 'Е' => 'E', 'Ё' => 'Yo', 'Ж' => 'Zh',
@@ -28,25 +28,25 @@ class Url {
       'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sh', 'ъ' => '', 'ы' => 'y', 'ь' => '', 'э' => 'e', 'ю' => 'yu',
       'я' => 'ya',
     ];
-    
+
     // Make custom replacements
     $str = preg_replace(array_keys($options['replacements']), $options['replacements'], $str);
-    
+
     // Transliterate characters to ASCII
     $str = str_replace(array_keys($char_map), $char_map, $str);
-    
+
     // Replace non-alphanumeric characters with our delimiter
     $str = preg_replace('/[^\p{L}\p{Nd}]+/u', $options['delimiter'], $str);
-    
+
     // Remove duplicate delimiters
     $str = preg_replace('/(' . preg_quote($options['delimiter'], '/') . '){2,}/', '$1', $str);
-    
+
     // Truncate slug to max. characters
     $str = mb_substr($str, 0, ($options['limit'] ? $options['limit'] : mb_strlen($str, 'UTF-8')), 'UTF-8');
-    
+
     // Remove delimiter from ends
     $str = trim($str, $options['delimiter']);
-    
+
     // Remove not latin letter
     $str = preg_replace('/[^a-z0-9\_\-]+/ui', '', $str);
 

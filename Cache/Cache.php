@@ -95,7 +95,7 @@ class Cache {
     assert("is_string(\$key) || is_array(\$key)");
     assert("is_int(\$ttl)");
 
-    return is_string($key) 
+    return is_string($key)
       ? static::connect()->set($key, $val, $ttl)
       : static::connect()->setMulti($key, $val) // $val as $ttl
     ;
