@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-declare -A checks
-checks['mysql']='mysql --version'
-checks['mysqli']='php -m | grep mysqli$'
-
-run-checks
+declare -a checks=(
+  'mysql --version'
+  'php -m | grep mysqli$'
+)
+run-checks "${checks[@]}"

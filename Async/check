@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-declare -A checks
-checks['php-pthreads']='php -m | grep pthreads$';
-run-checks
+declare -a checks=('php -m | grep pthreads$')
+
+run-checks "${checks[@]}"

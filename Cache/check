@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-declare -A checks
-checks['memcached']='which memcached'
-checks['php-memcached']='php -m | grep memcached$';
-run-checks
+declare -a checks=(
+  'which memcached'
+  'php -m | grep memcached$'
+)
+run-checks "${checks[@]}"
