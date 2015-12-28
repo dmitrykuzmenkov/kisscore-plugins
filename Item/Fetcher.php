@@ -1,6 +1,7 @@
 <?php
 namespace Plugin\Item;
 use Plugin\Pagination\Pagination;
+use Exception;
 
 /**
  * Загрузчик сущностей, доступ через объект Entity
@@ -41,14 +42,16 @@ class Fetcher extends Manager {
    */
   public static function create($mapper, $src_key, array $args = null, array &$data = [], array $batch = []) {
     $Self = new self;
-    if (false !== strpos($mapper, '::')) {
-      list($model, $method) = explode('::', $mapper);
-    } else {
+    if (is_string($mapper)) {
       $model  = $mapper;
-      $method = 'get';
+      $method = $args ? 'get' : 'getList';
+    } elseif (is_array($mapper)) {
+      list($model, $method) = $mapper;
+    } else {
+      throw new Exception('Mapper can be string or array with 2 elements');
     }
 
-    $Self->model  = config('item.model_namespace') . '\\' . $model;
+    $Self->model  = $model;
     $Self->method = $method;
 
     $Self->src_key    = $src_key;
